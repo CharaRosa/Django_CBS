@@ -134,3 +134,14 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Configuration de Crispy Forms pour utiliser Bootstrap 5
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
+
+# settings.py
+
+# Redirige l'utilisateur vers le tableau de bord après la connexion réussie
+LOGIN_REDIRECT_URL = 'gestion_cours:tableau_de_bord_ap' 
+
+# Redirige l'utilisateur vers le tableau de bord (ou la page d'accueil) après la déconnexion
+LOGOUT_REDIRECT_URL = 'gestion_cours:tableau_de_bord_ap' 
+
+# Assurez-vous que Django sait où trouver la page de connexion
+LOGIN_URL = 'login'

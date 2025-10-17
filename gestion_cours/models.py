@@ -1,22 +1,20 @@
 from django.db import models
+from django.contrib.auth import get_user_model 
 
-# --- MODÈLES INCHANGÉS ---
+# Récupérer le modèle User actif
+User = get_user_model() 
+
+# ----------------------------------------------------------------------
+# MODÈLES DE BASE (Référentiels)
+# ----------------------------------------------------------------------
 
 # Modèle pour les Professeurs
 class Professeur(models.Model):
-    STATUS_CHOICES = [
-        ('PERMANENT', 'Permanent'),
-        ('CONTRACTUEL', 'Contractuel'),
-        ('VACATAIRE', 'Vacataire'),
-    ]
-    
     nom = models.CharField(max_length=100)
-    prenoms = models.CharField(max_length=100)
+    prenoms = models.CharField(max_length=150)
+    contact = models.CharField(max_length=50, unique=True)
     email = models.EmailField(unique=True)
-    telephone = models.CharField(max_length=20, blank=True, null=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PERMANENT')
-    domaine_enseignement = models.CharField(max_length=150, blank=True, null=True)
-
+    
     def __str__(self):
         return f"{self.nom} {self.prenoms}"
     
@@ -27,8 +25,8 @@ class Professeur(models.Model):
 # Modèle pour les Filières (Ex: Génie Informatique, Finance)
 class Filiere(models.Model):
     code = models.CharField(max_length=10, unique=True)
-    libelle = models.CharField(max_length=150)
-
+    libelle = models.CharField(max_length=100)
+    
     def __str__(self):
         return self.libelle
 
@@ -37,20 +35,25 @@ class Filiere(models.Model):
         
 # Modèle pour les Niveaux (Ex: Licence 1, Master 2)
 class Niveau(models.Model):
-    libelle = models.CharField(max_length=50) # Ex: Licence, Master
+    LIBELLE_CHOICES = [
+        ('Licence', 'Licence'),
+        ('Master', 'Master'),
+    ]
+    libelle = models.CharField(max_length=10, choices=LIBELLE_CHOICES)
+    niv = models.IntegerField() # 1, 2 ou 3
     filiere = models.ForeignKey(Filiere, on_delete=models.CASCADE)
-    niv = models.IntegerField(default=1) # Le numéro du niveau (1, 2, 3...)
-    
+
     def __str__(self):
         return f"{self.libelle} {self.niv} - {self.filiere.code}"
 
     class Meta:
         verbose_name_plural = "Niveaux"
-        unique_together = ('libelle', 'filiere', 'niv') # Un niveau unique par filière
+        unique_together = ('libelle', 'filiere', 'niv')
 
 # Modèle pour les Matières (Ex: Algorithmique, Chinois)
 class Matiere(models.Model):
-    libelle = models.CharField(max_length=150, unique=True)
+    code = models.CharField(max_length=10, unique=True)
+    libelle = models.CharField(max_length=100)
     
     def __str__(self):
         return self.libelle
@@ -60,14 +63,12 @@ class Matiere(models.Model):
 
 # Modèle pour les Années Académiques
 class AnneeAcademique(models.Model):
-    annee_accademique = models.CharField(max_length=20, unique=True) # Ex: 2024-2025
-    active = models.BooleanField(default=False) # Indique si c'est l'année en cours pour l'émargement
-    annee_encours = models.BooleanField(default=False) # Permet de marquer l'année en cours (statistiques)
-
-    # Logique pour garantir une seule année active à la fois
+    annee_accademique = models.CharField(max_length=10, unique=True)
+    active = models.BooleanField(default=False)
+    
     def save(self, *args, **kwargs):
+        # Assure qu'une seule année est active à la fois
         if self.active:
-            # Désactive toutes les autres années si celle-ci devient active
             AnneeAcademique.objects.filter(active=True).exclude(pk=self.pk).update(active=False)
         super().save(*args, **kwargs)
 
@@ -77,36 +78,48 @@ class AnneeAcademique(models.Model):
     class Meta:
         verbose_name_plural = "Années Académiques"
         
+# ----------------------------------------------------------------------
+# MODÈLES DE GESTION DES COURS
+# ----------------------------------------------------------------------
+
 # Modèle pour la programmation d'une matière (Le cours réel)
 class MatiereProgrammee(models.Model):
+    SEMESTRE_CHOICES = [
+        ('S1', 'Semestre 1'),
+        ('S2', 'Semestre 2'),
+    ]
+
     matiere = models.ForeignKey(Matiere, on_delete=models.CASCADE)
-    professeur = models.ForeignKey(Professeur, on_delete=models.CASCADE)
     filiere = models.ForeignKey(Filiere, on_delete=models.CASCADE)
     niveau = models.ForeignKey(Niveau, on_delete=models.CASCADE)
+    professeur = models.ForeignKey(Professeur, on_delete=models.CASCADE)
     annee_academique = models.ForeignKey(AnneeAcademique, on_delete=models.CASCADE)
     
-    # Nombre d'heures prévues pour ce cours dans l'année
-    nbr_heure = models.DecimalField(max_digits=5, decimal_places=2) 
-    date_debut_estimee = models.DateField(blank=True, null=True)
-    # NOUVEAU CHAMP pour le calcul de la progression théorique
-    date_fin_estimee = models.DateField(blank=True, null=True) 
+    # Nouveau champ Semestre
+    semestre = models.CharField(
+        max_length=2, 
+        choices=SEMESTRE_CHOICES, 
+        default='S1' 
+    ) 
 
+    nbr_heure = models.DecimalField(max_digits=5, decimal_places=2, verbose_name="Volume horaire prévu")
+    date_debut_estimee = models.DateField(null=True, blank=True)
+    date_fin_estimee = models.DateField(null=True, blank=True)
+    
     def __str__(self):
-        return f"{self.matiere.libelle} - {self.niveau.libelle} {self.niveau.niv} ({self.filiere.code})"
+        return f"{self.matiere.libelle} - {self.niveau.libelle} {self.niveau.niv} ({self.filiere.code}) - {self.semestre}"
 
     class Meta:
         verbose_name_plural = "Matières Programmées"
-        unique_together = ('matiere', 'filiere', 'niveau', 'annee_academique')
+        # Mise à jour de unique_together pour inclure le semestre
+        unique_together = ('matiere', 'filiere', 'niveau', 'annee_academique', 'semestre') 
 
 # Modèle pour l'Emargement (Feuille de présence)
 class Emargement(models.Model):
     matiere_programmer = models.ForeignKey(MatiereProgrammee, on_delete=models.CASCADE)
-    date_emar = models.DateField()
+    date_emar = models.DateField(verbose_name="Date de la séance")
+    heure_eff = models.DecimalField(max_digits=4, decimal_places=2, verbose_name="Heures effectuées")
     
-    # Heure effective (Saisie directement par l'utilisateur comme une durée)
-    heure_eff = models.DecimalField(max_digits=4, decimal_places=2)
-    
-
     def __str__(self):
         return f"Émargement du {self.date_emar} pour {self.matiere_programmer}"
 
@@ -114,21 +127,25 @@ class Emargement(models.Model):
         verbose_name_plural = "Émargements"
         unique_together = ('matiere_programmer', 'date_emar')
 
-# --- NOUVEAU MODÈLE D'ÉVALUATION (Revue Qualitative) ---
+# Modèle d'Évaluation (Revue Qualitative)
 class Evaluation(models.Model):
-    # La contrainte unique=True garantit qu'il n'y a qu'une seule évaluation par MatiereProgrammee
-    matiere_programmer = models.ForeignKey(MatiereProgrammee, on_delete=models.CASCADE, unique=True) 
+    # Utilisation de OneToOneField pour s'assurer qu'un cours n'a qu'une seule évaluation
+    matiere_programmer = models.OneToOneField(MatiereProgrammee, on_delete=models.CASCADE)
     
-    # CHAMPS DE TEXTE POUR L'ÉVALUATION QUALITATIVE
+    utilisateur_evaluation = models.ForeignKey(
+        User, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
+        verbose_name="Évalué par"
+    )
+
     resume_evaluation = models.TextField(verbose_name="Résumé de l'Évaluation du Cours")
     resume_ap = models.TextField(verbose_name="Appréciation de l'Assistant Pédagogique (AP)")
     recommandation = models.TextField(verbose_name="Recommandations et Suggestions")
-    
-    # Les anciens champs type_evaluation, note, coefficient sont supprimés.
 
     def __str__(self):
         return f"Évaluation qualitative de {self.matiere_programmer.matiere.libelle}"
         
     class Meta:
         verbose_name_plural = "Évaluations"
-

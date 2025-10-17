@@ -3,36 +3,46 @@
 {% block title %}Historique des Émargements{% endblock %}
 
 {% block content %}
-<h1 class="mb-4 text-primary">Historique Récent des Émargements</h1>
-<p class="lead">Les 50 dernières séances enregistrées.</p>
+<h1 class="text-3xl font-extrabold text-indigo-700 mb-6">Historique Récent des Émargements</h1>
+<p class="text-gray-600 mb-6">Les 50 dernières séances enregistrées.</p>
 
 {% if historique %}
-<div class="table-responsive">
-    <table class="table table-striped table-hover align-middle">
-        <thead class="table-primary">
+<div class="bg-white p-6 rounded-xl shadow-lg overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-indigo-600">
             <tr>
-                <th>Date</th>
-                <th>Matière</th>
-                <th>Professeur</th>
-                <th>Durée (H)</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Date</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Matière</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Professeur</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Durée (H)</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody class="bg-white divide-y divide-gray-200">
             {% for emargement in historique %}
-            <tr>
-                <td>{{ emargement.date_emar|date:"d M Y" }}</td>
-                <td>{{ emargement.matiere_programmer.matiere.libelle }}</td>
-                <td>{{ emargement.matiere_programmer.professeur }}</td>
+            <tr class="hover:bg-indigo-50 transition duration-150">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {{ emargement.date_emar|date:"d M Y" }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    {{ emargement.matiere_programmer.matiere.libelle }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    {{ emargement.matiere_programmer.professeur }}
+                </td>
                 {# Affiche la durée enregistrée dans le champ heure_eff #}
-                <td><span class="badge bg-success">{{ emargement.heure_eff }}</span></td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                    <span class="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        {{ emargement.heure_eff }}
+                    </span>
+                </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
 {% else %}
-<div class="alert alert-info">
-    Aucun émargement n'a encore été enregistré.
+<div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 rounded-md" role="alert">
+    <p>Aucun émargement n'a encore été enregistré.</p>
 </div>
 {% endif %}
 {% endblock content %}

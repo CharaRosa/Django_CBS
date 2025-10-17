@@ -1,0 +1,38 @@
+{% extends 'base.html' %} 
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow-lg mt-5">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0">Créer une Nouvelle Matière</h3>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    {% for field in form %}
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.errors %}
+                                <div class="text-danger small">{{ field.errors }}</div>
+                            {% endif %}
+                            {% if field.help_text %}
+                                <div class="form-text">{{ field.help_text }}</div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                    
+                    <button type="submit" class="btn btn-success mt-3 w-100">
+                        Enregistrer la Matière
+                    </button>
+                    <a href="{% url 'gestion_cours:matiere_list' %}" class="btn btn-outline-secondary mt-2 w-100">
+                        Annuler
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

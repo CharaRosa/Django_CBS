@@ -8,13 +8,16 @@ from .models import (
 # Enregistrement des modèles de base
 @admin.register(Professeur)
 class ProfesseurAdmin(admin.ModelAdmin):
-    list_display = ('nom', 'prenoms', 'email', 'status', 'domaine_enseignement')
-    search_fields = ('nom', 'prenoms', 'email')
-    list_filter = ('status',)
+    # CORRECTION : Suppression des champs 'status' et 'domaine_enseignement' qui n'existent pas dans models.py
+    list_display = ('nom', 'prenoms', 'email', 'contact') # 'contact' est ajouté car il existe dans le modèle
+    search_fields = ('nom', 'prenoms', 'email', 'contact')
+    # CORRECTION : Suppression de 'status' de list_filter
+    list_filter = [] 
 
 @admin.register(Filiere)
 class FiliereAdmin(admin.ModelAdmin):
     list_display = ('code', 'libelle')
+    search_fields = ('libelle', 'code')
 
 @admin.register(Niveau)
 class NiveauAdmin(admin.ModelAdmin):
@@ -23,13 +26,14 @@ class NiveauAdmin(admin.ModelAdmin):
 
 @admin.register(Matiere)
 class MatiereAdmin(admin.ModelAdmin):
-    list_display = ('libelle',)
-    search_fields = ('libelle',)
+    list_display = ('code', 'libelle') # Ajout de 'code' pour plus de clarté
+    search_fields = ('libelle', 'code')
 
 @admin.register(AnneeAcademique)
 class AnneeAcademiqueAdmin(admin.ModelAdmin):
-    list_display = ('annee_accademique', 'active', 'annee_encours')
-    list_editable = ('active',) # Permet de changer rapidement l'année active
+    # CORRECTION : 'annee_encours' n'existe pas, il est remplacé par 'active'
+    list_display = ('annee_accademique', 'active') 
+    list_editable = ('active',) 
 
 # Enregistrement du modèle principal de programmation
 @admin.register(MatiereProgrammee)
@@ -52,5 +56,7 @@ class EmargementAdmin(admin.ModelAdmin):
 # Enregistrement du modèle d'évaluation
 @admin.register(Evaluation)
 class EvaluationAdmin(admin.ModelAdmin):
-    list_display = ('matiere_programmer',)
+    # Ajout du champ utilisateur pour voir qui a fait l'évaluation
+    list_display = ('matiere_programmer', 'utilisateur_evaluation') 
     list_filter = ('matiere_programmer__annee_academique',)
+    search_fields = ('matiere_programmer__matiere__libelle',)

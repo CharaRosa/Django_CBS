@@ -1,35 +1,95 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.db.models import F, Sum 
+from django.db.models import F, Sum, Count # Ajout de Count pour la vue tableau_de_bord_ap (ancien)
 from django.utils import timezone
 from datetime import date 
 from django.contrib import messages
-# AJOUT DE L'IMPORT DU DÉCORATEUR
-from django.contrib.auth.decorators import login_required
-from .models import MatiereProgrammee, AnneeAcademique, Emargement, Evaluation 
-from .forms import EmargementForm 
-from django import forms 
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+from django.urls import reverse_lazy
+from django.utils.decorators import method_decorator 
+from .models import Matiere, Professeur, Emargement, MatiereProgrammee, AnneeAcademique, Evaluation
+# Assurez-vous d'avoir MatiereProgrammeeForm si vous l'utilisez
+from .forms import MatiereForm, ProfesseurForm, EmargementForm, EvaluationForm 
+from .mixins import AssistantPedaRequiredMixin # Ce mixin doit être défini dans .mixins
+
+# --- Fonctions de test de permission ---
+def est_administrateur_pedagogique(user):
+    """Vérifie si l'utilisateur appartient au groupe ADMIN_PEDAGOGIQUE ou est super-utilisateur."""
+    # Assurez-vous que 'ADMIN_PEDAGOGIQUE' est le nom exact de votre groupe.
+    return user.groups.filter(name='ADMIN_PEDAGOGIQUE').exists() or user.is_superuser
+# ---------------------------------------
 
 # ----------------------------------------------------------------------
-# FORMULAIRE
+# VUES GÉNÉRIQUES POUR L'ASSISTANT PÉDAGOGIQUE (CRUD)
 # ----------------------------------------------------------------------
 
-# --- NOUVEAU Formulaire d'Évaluation (Qualitative) ---
-class EvaluationForm(forms.ModelForm):
-    class Meta:
-        model = Evaluation
-        fields = ['resume_evaluation', 'resume_ap', 'recommandation'] 
-        
-        widgets = {
-            'resume_evaluation': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
-            'resume_ap': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
-            'recommandation': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
-        }
+# Classe de base avec mixin de sécurité
+class BaseAPView(AssistantPedaRequiredMixin):
+    pass
+    
+# 1. Gestion des Matières (CRUD)
+class MatiereListView(BaseAPView, ListView):
+    model = Matiere
+    template_name = 'gestion_cours/matiere_list.html'
+    context_object_name = 'matieres'
+
+class MatiereCreateView(BaseAPView, CreateView):
+    model = Matiere
+    form_class = MatiereForm
+    template_name = 'gestion_cours/matiere_form.html'
+    success_url = reverse_lazy('gestion_cours:matiere_list')
+
+class MatiereUpdateView(BaseAPView, UpdateView):
+    model = Matiere
+    form_class = MatiereForm
+    template_name = 'gestion_cours/matiere_form.html'
+    success_url = reverse_lazy('gestion_cours:matiere_list')
+    
+class MatiereDeleteView(BaseAPView, DeleteView):
+    model = Matiere
+    template_name = 'gestion_cours/matiere_confirm_delete.html' 
+    success_url = reverse_lazy('gestion_cours:matiere_list')
+    context_object_name = 'matiere' 
+
+# 2. Gestion des Professeurs (CRUD)
+class ProfesseurListView(BaseAPView, ListView):
+    model = Professeur
+    template_name = 'gestion_cours/professeur_list.html'
+    context_object_name = 'professeurs'
+
+class ProfesseurCreateView(BaseAPView, CreateView):
+    model = Professeur
+    form_class = ProfesseurForm
+    template_name = 'gestion_cours/professeur_form.html'
+    success_url = reverse_lazy('gestion_cours:professeur_list')
+
+class ProfesseurUpdateView(BaseAPView, UpdateView):
+    model = Professeur
+    form_class = ProfesseurForm
+    template_name = 'gestion_cours/professeur_form.html'
+    success_url = reverse_lazy('gestion_cours:professeur_list')
+
+class ProfesseurDeleteView(BaseAPView, DeleteView):
+    model = Professeur
+    # Utilisation d'un template générique pour la suppression si 'professeur_confirm_delete.html' n'existe pas
+    template_name = 'gestion_cours/professeur_confirm_delete.html' 
+    success_url = reverse_lazy('gestion_cours:professeur_list')
+    context_object_name = 'professeur' 
+
+# 3. Création d'Emargement (Vue générique AP)
+class EmargementCreateView(BaseAPView, CreateView):
+    model = Emargement
+    form_class = EmargementForm
+    template_name = 'gestion_cours/emargement_form.html'
+    # Redirige vers la vue principale du tableau de bord
+    success_url = reverse_lazy('gestion_cours:home') 
+
 
 # ----------------------------------------------------------------------
-# VUES
+# VUES FONCTIONNELLES (Tableau de Bord, Émargement, Évaluation, Historique)
 # ----------------------------------------------------------------------
 
-# L'utilisateur DOIT être connecté pour accéder au tableau de bord
+# La vue 'home_view' prend le rôle de 'tableau_de_bord_ap' en affichant la progression
 @login_required
 def home_view(request):
     """Affiche la liste des cours programmés pour l'année académique active et calcule la progression."""
@@ -103,6 +163,11 @@ def home_view(request):
         'annee_active': annee_active,
         'cours_list': cours_list,
     }
+    # Ajout des données du tableau de bord AP simple (du premier bloc) pour le template 'home.html' si nécessaire
+    context['heures_enseignees'] = Emargement.objects.aggregate(total=Sum('heure_eff'))['total'] or 0
+    context['matieres_actives'] = Matiere.objects.count()
+    context['professeurs_actifs'] = Professeur.objects.count()
+
     return render(request, 'gestion_cours/home.html', context)
 
 
@@ -122,6 +187,7 @@ def emargement_view(request, pk):
         messages.error(request, "Erreur : La matière sélectionnée n'est pas programmée pour l'année académique active.")
         return redirect('gestion_cours:home')
 
+    # Initialisation de date_emar (dans le formulaire, ce sera date_emar)
     initial_data = {'date_emar': timezone.now().date()}
     form = EmargementForm(request.POST) if request.method == 'POST' else EmargementForm(initial=initial_data)
     volume_prevu = matiere_prog.nbr_heure
@@ -133,9 +199,17 @@ def emargement_view(request, pk):
     if request.method == 'POST':
         if form.is_valid():
             
-            date_emar = form.cleaned_data['date_emar']
+            # Les champs sont lus directement du formulaire
+            date_emar = form.cleaned_data['date_emar'] 
             heure_eff_saisie = float(form.cleaned_data['duree_saisie'])
 
+            # --- VÉRIFICATION D'UNICITÉ MANUELLE (CORRECTION POUR L'APPROCHE fields=[]) ---
+            if Emargement.objects.filter(matiere_programmer=matiere_prog, date_emar=date_emar).exists():
+                 messages.error(request, f"Échec de l'émargement : La matière {matiere_prog.matiere.libelle} a déjà été émargée à la date du {date_emar}.")
+                 return render(request, 'gestion_cours/emargement_form.html', {'matiere_prog': matiere_prog, 'form': form, 'volume_restant': heures_restantes})
+            # -------------------------------------------------------------------------------
+
+            # --- LOGIQUE DE VALIDATION DES HEURES ---
             if heure_eff_saisie <= 0 or heure_eff_saisie > 8:
                 messages.error(request, "Erreur: La durée du cours doit être comprise entre 0 et 8 heures.")
                 return render(request, 'gestion_cours/emargement_form.html', {'matiere_prog': matiere_prog, 'form': form, 'volume_restant': heures_restantes})
@@ -148,6 +222,7 @@ def emargement_view(request, pk):
                  messages.error(request, f"Échec de l'émargement : La durée saisie ({heure_eff_saisie:.2f}h) dépasse le volume restant ({heures_restantes:.2f}h). Veuillez ajuster votre saisie.")
                  return render(request, 'gestion_cours/emargement_form.html', {'matiere_prog': matiere_prog, 'form': form, 'volume_restant': heures_restantes})
             
+            # --- CRÉATION DE L'OBJET EMERARGEMENT ---
             Emargement.objects.create(
                 matiere_programmer=matiere_prog,
                 date_emar=date_emar,
@@ -159,7 +234,7 @@ def emargement_view(request, pk):
             return redirect('gestion_cours:home')
             
         else:
-            messages.error(request, "Erreur de formulaire. Veuillez vérifier les champs (la date/cours est peut-être déjà émargée).")
+            messages.error(request, "Erreur de formulaire. Veuillez vérifier les champs.")
 
     context = {
         'matiere_prog': matiere_prog,
@@ -169,8 +244,9 @@ def emargement_view(request, pk):
     return render(request, 'gestion_cours/emargement_form.html', context)
 
 
-# L'utilisateur DOIT être connecté pour évaluer un cours
+# Seul l'Administrateur Pédagogique ou le Super-utilisateur peut évaluer un cours
 @login_required
+@user_passes_test(est_administrateur_pedagogique, login_url='/') 
 def evaluation_view(request, pk):
     """Permet d'ajouter ou de modifier l'évaluation qualitative d'un cours complété."""
     
@@ -196,6 +272,8 @@ def evaluation_view(request, pk):
         if form.is_valid():
             evaluation = form.save(commit=False)
             evaluation.matiere_programmer = matiere_prog
+            # Enregistre l'utilisateur connecté
+            evaluation.utilisateur_evaluation = request.user 
             evaluation.save()
             messages.success(request, f"Évaluation qualitative enregistrée pour {matiere_prog.matiere.libelle}!")
             return redirect('gestion_cours:home')
@@ -214,8 +292,9 @@ def evaluation_view(request, pk):
     return render(request, 'gestion_cours/evaluation_form.html', context)
 
 
-# L'utilisateur DOIT être connecté pour voir l'historique
+# L'utilisateur DOIT être un AP ou Super-utilisateur pour voir l'historique
 @login_required
+@user_passes_test(est_administrateur_pedagogique, login_url='/')
 def historique_view(request):
     """Affiche l'historique des émargements pour l'année académique active."""
 
