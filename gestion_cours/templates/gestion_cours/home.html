@@ -1,0 +1,37 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{% url 'gestion_cours:home' %}">CBS - Gestion Cours</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'gestion_cours:home' %}">Tableau de Bord</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'gestion_cours:historique' %}">Historique</a>
+                </li>
+            </ul>
+
+            <ul class="navbar-nav">
+                {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <span class="navbar-text me-3">
+                            Bonjour, **{{ user.username }}**
+                        </span>
+                    </li>
+                    <li class="nav-item">
+                        <!-- Assurez-vous que l'URL 'logout' est définie dans votre projet (souvent dans les URLs de Django par défaut) -->
+                        <a class="btn btn-sm btn-outline-light" href="{% url 'logout' %}">Déconnexion</a>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <!-- Assurez-vous que l'URL 'login' est définie -->
+                        <a class="btn btn-sm btn-outline-light" href="{% url 'login' %}">Connexion</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>

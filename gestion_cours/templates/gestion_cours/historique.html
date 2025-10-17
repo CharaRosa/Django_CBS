@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Historique des Émargements{% endblock %}
+
+{% block content %}
+<h1 class="mb-4 text-primary">Historique Récent des Émargements</h1>
+<p class="lead">Les 50 dernières séances enregistrées.</p>
+
+{% if historique %}
+<div class="table-responsive">
+    <table class="table table-striped table-hover align-middle">
+        <thead class="table-primary">
+            <tr>
+                <th>Date</th>
+                <th>Matière</th>
+                <th>Professeur</th>
+                <th>Durée (H)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for emargement in historique %}
+            <tr>
+                <td>{{ emargement.date_emar|date:"d M Y" }}</td>
+                <td>{{ emargement.matiere_programmer.matiere.libelle }}</td>
+                <td>{{ emargement.matiere_programmer.professeur }}</td>
+                {# Affiche la durée enregistrée dans le champ heure_eff #}
+                <td><span class="badge bg-success">{{ emargement.heure_eff }}</span></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info">
+    Aucun émargement n'a encore été enregistré.
+</div>
+{% endif %}
+{% endblock content %}

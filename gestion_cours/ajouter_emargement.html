@@ -1,0 +1,12 @@
+<h1>Ajouter un Émargement</h1>
+
+<h2>Cours : {{ cours.matiere.libelle }} ({{ cours.niveau.niv }} {{ cours.filiere.code }})</h2>
+<p>Professeur : {{ cours.professeur }}</p>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Enregistrer l'Émargement</button>
+</form>
+
+<p><a href="{% url 'liste_cours_actifs' %}">Retour à la liste des cours</a></p>

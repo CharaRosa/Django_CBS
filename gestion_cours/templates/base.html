@@ -1,0 +1,48 @@
+<!-- Assurez-vous d'utiliser Bootstrap 5 (classes bg-primary, navbar-expand-lg, etc.) -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-lg">
+    <div class="container-fluid">
+        <!-- Nom de l'application -->
+        <a class="navbar-brand fw-bold text-white" href="{% url 'gestion_cours:home' %}">
+            CBS - Gestion Cours
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <!-- Liens de navigation principaux -->
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'gestion_cours:home' %}">Tableau de Bord</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'gestion_cours:historique' %}">Historique</a>
+                </li>
+            </ul>
+
+            <!-- Section Utilisateur / Connexion -->
+            <ul class="navbar-nav d-flex align-items-center">
+                {% if user.is_authenticated %}
+                    <!-- Amélioration de l'affichage du nom d'utilisateur -->
+                    <li class="nav-item me-3">
+                        <span class="navbar-text text-light small fst-italic">
+                            Connecté en tant que: 
+                            <span class="fw-bold">{{ user.username }}</span>
+                        </span>
+                    </li>
+                    <li class="nav-item">
+                        <!-- Utilisation de la classe 'btn-warning' pour le bouton Déconnexion -->
+                        <a class="btn btn-sm btn-warning" href="{% url 'logout' %}">
+                            Déconnexion
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="btn btn-sm btn-light" href="{% url 'login' %}">
+                            Connexion
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>

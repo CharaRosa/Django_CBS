@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Évaluation Qualitative du Cours{% endblock %}
+
+{% block content %}
+<h1 class="mb-4 text-primary">{% if mode_edition %}Modifier l'Évaluation{% else %}Nouvelle Évaluation Qualitative{% endif %}</h1>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+        Évaluation de la matière : **{{ matiere_prog.matiere.libelle }}**
+        <br>
+        <small>{{ matiere_prog.professeur }} - Progression: {{ progression|floatformat:1 }}%</small>
+    </div>
+    <div class="card-body">
+        
+        {% if progression < 100 %}
+        <div class="alert alert-danger" role="alert">
+            Erreur: Le cours doit être complété à 100% pour être évalué. (Actuellement: {{ progression|floatformat:1 }}%)
+        </div>
+        {% else %}
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="mb-4">
+                <label for="{{ form.resume_evaluation.id_for_label }}" class="form-label fw-bold">{{ form.resume_evaluation.label }}</label>
+                {{ form.resume_evaluation }}
+                {% for error in form.resume_evaluation.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+            
+            <div class="mb-4">
+                <label for="{{ form.resume_ap.id_for_label }}" class="form-label fw-bold">{{ form.resume_ap.label }}</label>
+                {{ form.resume_ap }}
+                {% for error in form.resume_ap.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="mb-4">
+                <label for="{{ form.recommandation.id_for_label }}" class="form-label fw-bold">{{ form.recommandation.label }}</label>
+                {{ form.recommandation }}
+                {% for error in form.recommandation.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <button type="submit" class="btn btn-success mt-3">{% if mode_edition %}Mettre à Jour l'Évaluation{% else %}Enregistrer l'Évaluation{% endif %}</button>
+            <a href="{% url 'gestion_cours:home' %}" class="btn btn-secondary mt-3">Annuler</a>
+
+        </form>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock content %}

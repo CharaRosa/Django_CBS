@@ -1,0 +1,40 @@
+    {% extends "base.html" %}
+    {% load crispy_forms_tags %} 
+
+    {% block title %}Émargement - {{ matiere_prog.matiere.libelle }}{% endblock %}
+
+    {% block content %}
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white text-center">
+                    <h2 class="mb-0">Feuille d'Émargement</h2>
+                </div>
+                <div class="card-body p-4">
+                    <h4 class="card-title text-success">{{ matiere_prog.matiere.libelle }}</h4>
+                    <p class="text-muted mb-4">
+                        <strong>Professeur:</strong> {{ matiere_prog.professeur.nom }} {{ matiere_prog.professeur.prenoms }}
+                        | <strong>Niveau:</strong> {{ matiere_prog.niveau.libelle }} {{ matiere_prog.niveau.niv }} ({{ matiere_prog.filiere.code }})
+                    </p>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- Le tag crispy rend le formulaire avec le style Bootstrap 5 -->
+                        {{ form|crispy }}
+                        
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                Enregistrer la Séance d'Émargement
+                            </button>
+                            <a href="{% url 'gestion_cours:home' %}" class="btn btn-outline-secondary">
+                                Annuler et Retourner à la Liste
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock content %}
+    

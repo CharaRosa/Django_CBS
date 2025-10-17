@@ -1,0 +1,36 @@
+<h1>Liste des Cours Programmés</h1>
+
+{% if annee_active %}
+    <h2>Année Académique Active : {{ annee_active.annee_accademique }}</h2>
+
+    {% if cours_programmes %}
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Matière</th>
+                    <th>Filière/Niveau</th>
+                    <th>Professeur</th>
+                    <th>Total Heures</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cours in cours_programmes %}
+                <tr>
+                    <td>{{ cours.matiere.libelle }}</td>
+                    <td>{{ cours.filiere.code }} - {{ cours.niveau.niv }}</td>
+                    <td>{{ cours.professeur.nom }} {{ cours.professeur.prenoms }}</td>
+                    <td>{{ cours.nbr_heure }}h</td>
+                    <td>
+                        <a href="{% url 'ajouter_emargement' cours.pk %}">Faire l'Émargement</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Aucun cours programmé pour l'année active.</p>
+    {% endif %}
+{% else %}
+    <p>ATTENTION : Aucune année académique n'est marquée comme active.</p>
+{% endif %}
