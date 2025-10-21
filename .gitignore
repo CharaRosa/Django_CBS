@@ -1,0 +1,10 @@
+# Dépendances et environnements
+/node_modules
+/venv
+
+# Fichiers de compilation Python
+*.pyc
+__pycache__/
+
+# Le binaire tailwindcss volumineux
+tailwindcss
