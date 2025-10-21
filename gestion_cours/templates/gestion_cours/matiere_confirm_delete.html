@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Confirmer la Suppression{% endblock title %}
+
+{% block content %}
+<div class="max-w-xl mx-auto">
+    
+    <h1 class="text-3xl font-extrabold text-gray-900 mb-6">Confirmer la Suppression</h1>
+
+    <div class="bg-white p-6 md:p-8 rounded-xl shadow-lg border-t-4 border-red-600">
+        
+        <p class="text-lg text-gray-700 mb-6">
+            Êtes-vous sûr de vouloir supprimer la matière :
+            <span class="font-bold text-red-700 block mt-2 p-2 bg-red-50 rounded-lg">
+                "{{ object.libelle }}" (Code: {{ object.code }}) ? </span>
+        </p>
+
+        <p class="text-sm text-gray-500 mb-8">
+            Cette action est irréversible.
+        </p>
+
+        <form method="post" class="flex justify-end space-x-4">
+            {% csrf_token %}
+            
+            {# Bouton Annuler/Retour #}
+            <a href="{% url 'gestion_cours:matiere_list' %}" class="px-6 py-2 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 rounded-lg shadow-sm transition duration-150">
+                Annuler
+            </a>
+
+            {# Bouton de Confirmation de Suppression (Rouge) #}
+            <button type="submit" class="px-6 py-2 text-white bg-red-600 hover:bg-red-700 rounded-lg shadow-md transition duration-150 font-semibold">
+                Oui, Supprimer
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock content %}

@@ -1,0 +1,11 @@
+{
+  "scripts": {
+    "build": "./node_modules/.bin/tailwindcss -i ./css/input.css -o ./static/css/tailwind.css --minify",
+    "watch": "./node_modules/.bin/tailwindcss -i ./css/input.css -o ./static/css/tailwind.css --watch"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.14"
+  }
+}

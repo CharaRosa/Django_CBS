@@ -8,17 +8,45 @@ User = get_user_model()
 # MODÈLES DE BASE (Référentiels)
 # ----------------------------------------------------------------------
 
-# Modèle pour les Professeurs
+# Modèle pour les Professeurs - MISE À JOUR
 class Professeur(models.Model):
+    # Champs existants
     nom = models.CharField(max_length=100)
     prenoms = models.CharField(max_length=150)
     contact = models.CharField(max_length=50, unique=True)
     email = models.EmailField(unique=True)
     
+    # Nouveaux Champs
+    grade = models.CharField(
+        max_length=100, 
+        null=True, 
+        blank=True,
+        verbose_name="Grade universitaire"
+    )
+    domaine = models.CharField(
+        max_length=100, 
+        null=True, 
+        blank=True,
+        verbose_name="Domaine d'expertise"
+    )
+    cv = models.FileField(
+        upload_to='professeurs/cvs/', 
+        null=True, 
+        blank=True,
+        verbose_name="CV (Fichier)"
+    )
+    dernier_diplome = models.FileField(
+        upload_to='professeurs/diplomes/', 
+        null=True, 
+        blank=True,
+        verbose_name="Dernier Diplôme (Fichier)"
+    )
+    
     def __str__(self):
         return f"{self.nom} {self.prenoms}"
     
     class Meta:
+        verbose_name = "Professeur"
         verbose_name_plural = "Professeurs"
         ordering = ['nom']
 
@@ -95,7 +123,7 @@ class MatiereProgrammee(models.Model):
     professeur = models.ForeignKey(Professeur, on_delete=models.CASCADE)
     annee_academique = models.ForeignKey(AnneeAcademique, on_delete=models.CASCADE)
     
-    # Nouveau champ Semestre
+    # Champ Semestre
     semestre = models.CharField(
         max_length=2, 
         choices=SEMESTRE_CHOICES, 

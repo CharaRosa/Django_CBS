@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Liste des Niveaux{% endblock title %}
+
+{% block content %}
+<h1 class="text-3xl font-extrabold text-gray-900 mb-6">Gestion des Niveaux</h1>
+
+<div class="mb-4 flex justify-between items-center">
+    <a href="{% url 'gestion_cours:niveau_create' %}" class="flex items-center text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 py-2 px-4 rounded-lg transition duration-150 shadow-md">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+        Ajouter un Niveau
+    </a>
+</div>
+
+<div class="bg-white rounded-xl shadow-lg overflow-hidden">
+    {% if object_list %}
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+            <tr>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Niveau
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Filière Associée
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Code Filière
+                </th>
+                <th scope="col" class="relative px-6 py-3">
+                    <span class="sr-only">Actions</span>
+                </th>
+            </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+            {% for niveau in object_list %}
+            <tr class="hover:bg-amber-50 transition duration-100">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {{ niveau.libelle }} {{ niveau.niv }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    {{ niveau.filiere.libelle }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    {{ niveau.filiere.code }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
+                    <a href="{% url 'gestion_cours:niveau_update' pk=niveau.pk %}" class="text-amber-600 hover:text-amber-800">
+                        Modifier
+                    </a>
+                    <a href="{% url 'gestion_cours:niveau_delete' pk=niveau.pk %}" class="text-red-600 hover:text-red-800">
+                        Supprimer
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="p-6 text-center text-gray-500">
+        <p>Aucun niveau n'a encore été défini.</p>
+        <a href="{% url 'gestion_cours:niveau_create' %}" class="mt-4 inline-flex items-center text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 py-2 px-4 rounded-lg transition duration-150 shadow-md">
+            Ajouter le premier Niveau
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock content %}

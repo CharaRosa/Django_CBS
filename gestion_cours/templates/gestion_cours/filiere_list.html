@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Liste des Filières{% endblock title %}
+
+{% block content %}
+<div class="space-y-8">
+    <div class="flex justify-between items-center mb-6 border-b pb-4">
+        <h1 class="text-3xl font-extrabold text-gray-900">Gestion des Filières</h1>
+        <a href="{% url 'gestion_cours:filiere_create' %}" class="bg-amber-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-amber-700 transition duration-150 flex items-center font-semibold">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            Ajouter une Filière
+        </a>
+    </div>
+
+    {% include "gestion_cours/includes/messages.html" %} 
+    
+    <div class="bg-white p-6 rounded-xl shadow-lg overflow-x-auto border-t-4 border-amber-600">
+        {% if object_list %}
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Code</th>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Libellé</th>
+                    <th class="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                {% for filiere in object_list %}
+                <tr class="hover:bg-amber-50 transition duration-100">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ filiere.code }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ filiere.libelle }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium space-x-2">
+                        <a href="{% url 'gestion_cours:filiere_update' pk=filiere.pk %}" class="text-amber-600 hover:text-amber-800 p-2 rounded-full hover:bg-amber-100" title="Modifier">
+                            <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-9-9l8-8-8 8zm9-9l3 3m-3-3L11 2"></path></svg>
+                        </a>
+                        <a href="{% url 'gestion_cours:filiere_delete' pk=filiere.pk %}" class="text-red-600 hover:text-red-800 p-2 rounded-full hover:bg-red-100" title="Supprimer">
+                            <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="p-4 bg-gray-50 border border-gray-200 rounded-lg text-gray-600 text-center space-y-4">
+            <p>Aucune filière n'est enregistrée.</p>
+            <a href="{% url 'gestion_cours:filiere_create' %}" class="inline-flex items-center text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 py-2 px-4 rounded-lg transition duration-150 shadow-md">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                Ajouter la première Filière
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock content %}

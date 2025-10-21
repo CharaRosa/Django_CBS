@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -145,3 +146,33 @@ LOGOUT_REDIRECT_URL = 'gestion_cours:tableau_de_bord_ap'
 
 # Assurez-vous que Django sait où trouver la page de connexion
 LOGIN_URL = 'login'
+
+# settings.py
+
+# L'utilisateur non connecté atterrit sur la page d'accueil publique (/)
+# La page de connexion doit rediriger vers le TABLEAU DE BORD AP (gestion_cours:home)
+LOGIN_REDIRECT_URL = 'gestion_cours:home' 
+
+# Après déconnexion, on retourne à la page d'accueil publique (/)
+LOGOUT_REDIRECT_URL = '/'
+
+# Base directory
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Paramètres des médias (téléchargements d'utilisateurs)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# At the end of the file or near STATIC_URL:
+
+# Directory where Django will look for static files
+STATIC_URL = 'static/' 
+
+# List of folders where Django's static file finders will look, 
+# IN ADDITION to the 'static' folders inside apps.
+STATICFILES_DIRS = [
+    BASE_DIR / "static", 
+]
+
+# (Optional, but good practice for production)
+STATIC_ROOT = BASE_DIR / "staticfiles"

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Confirmer la Suppression{% endblock title %}
+
+{% block content %}
+<div class="space-y-8 max-w-lg mx-auto">
+    <h1 class="text-3xl font-extrabold text-red-700 border-b pb-4">
+        Confirmer la Suppression
+    </h1>
+
+    <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-red-500">
+        <p class="text-lg text-gray-700 mb-6">
+            Êtes-vous sûr de vouloir supprimer définitivement : 
+            <span class="font-bold text-red-600">"{{ object }}"</span> ?
+        </p>
+        <p class="text-sm text-gray-500 mb-8">
+            Cette action est irréversible et pourrait affecter des cours ou d'autres enregistrements liés.
+        </p>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="flex justify-between items-center">
+                
+                {# Utilisation de la variable passée par la vue #}
+                {% if list_url %}
+                <a href="{% url list_url %}" class="text-gray-600 hover:text-gray-900 transition duration-150 border px-4 py-2 rounded-lg">
+                    Annuler
+                </a>
+                {% else %}
+                <a href="{% url 'gestion_cours:home' %}" class="text-gray-600 hover:text-gray-900 transition duration-150 border px-4 py-2 rounded-lg">
+                    Annuler (Retour à l'accueil)
+                </a>
+                {% endif %}
+                
+                <button type="submit" class="bg-red-600 text-white px-6 py-2 rounded-lg shadow-md hover:bg-red-700 transition duration-150 font-semibold">
+                    Confirmer la Suppression
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock content %}

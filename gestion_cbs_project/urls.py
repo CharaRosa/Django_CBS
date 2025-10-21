@@ -19,6 +19,8 @@ from django.contrib import admin
 from django.urls import include, path
 from django.conf import settings # Import de settings
 from django.conf.urls.static import static # Import pour les fichiers statiques (optionnel)
+from django.conf import settings # <-- NOUVEAU
+from django.conf.urls.static import static # <-- NOUVEAU
 
 
 urlpatterns = [
@@ -31,3 +33,6 @@ urlpatterns = [
 if settings.DEBUG:
 # Correction: La fonction doit être appelée 'static', pas 'stat'
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) # <-- NOUVEAU

@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Liste des Professeurs{% endblock title %}
+
+{% block content %}
+<h1 class="text-3xl font-extrabold text-gray-900 mb-6">Gestion des Professeurs</h1>
+
+<div class="mb-4 flex justify-between items-center">
+    <a href="{% url 'gestion_cours:professeur_create' %}" class="flex items-center text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 py-2 px-4 rounded-lg transition duration-150 shadow-md">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+        Ajouter un Professeur
+    </a>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="p-4 text-sm {% if message.tags == 'error' %}text-red-700 bg-red-100 border border-red-400{% else %}text-green-700 bg-green-100 border border-green-400{% endif %} rounded-lg mb-4" role="alert">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div class="bg-white rounded-xl shadow-lg overflow-x-auto">
+    {% if object_list %}
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Nom & Prénoms</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Téléphone / Contact</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Email</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Grade / Domaine</th>
+                <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+            {% for professeur in object_list %}
+            <tr class="hover:bg-amber-50 transition duration-100">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {{ professeur.nom }} {{ professeur.prenoms }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ professeur.contact|default:"N/A" }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ professeur.email|default:"N/A" }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ professeur.grade|default:"N/A" }} / {{ professeur.domaine|default:"N/A" }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium space-x-3">
+                    <a href="{% url 'gestion_cours:professeur_update' professeur.pk %}" class="text-amber-600 hover:text-amber-800" title="Modifier">
+                        Modifier
+                    </a>
+                    <a href="{% url 'gestion_cours:professeur_delete' professeur.pk %}" class="text-red-600 hover:text-red-800" title="Supprimer">
+                        Supprimer
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="p-6 text-center text-gray-500">
+        <p>Aucun professeur n'est encore enregistré.</p>
+        <a href="{% url 'gestion_cours:professeur_create' %}" class="mt-4 inline-flex items-center text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 py-2 px-4 rounded-lg transition duration-150 shadow-md">
+            Ajouter le premier Professeur
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock content %}

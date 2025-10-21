@@ -1,40 +1,78 @@
-    {% extends "base.html" %}
-    {% load crispy_forms_tags %} 
+{% extends "base.html" %}
+{% load crispy_forms_tags %} 
+{% block title %}Saisie de Séance - {{ matiere_prog.matiere.libelle }}{% endblock %}
 
-    {% block title %}Émargement - {{ matiere_prog.matiere.libelle }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8 col-md-10">
+        <div class="card shadow-xl border-0">
+            <div class="card-header bg-amber-600 text-white text-center p-4 rounded-t-xl">
+                <h2 class="mb-0 text-2xl font-bold">Feuille d'Émargement de Séance</h2>
+            </div>
+            <div class="card-body p-6">
+                
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-6 space-y-2">
+                    <h4 class="text-xl font-semibold text-amber-700">{{ matiere_prog.matiere.libelle }}</h4>
+                    
+                    <div class="flex justify-between text-sm text-gray-700">
+                        <p>
+                            <strong>Niveau:</strong> {{ matiere_prog.niveau.libelle }} {{ matiere_prog.niveau.niv }} ({{ matiere_prog.filiere.code }})
+                        </p>
+                        <p>
+                            <strong>Professeur:</strong> 
+                            <span class="font-medium text-gray-800">
+                                {{ matiere_prog.professeur.nom }} {{ matiere_prog.professeur.prenoms }}
+                            </span>
+                        </p>
+                    </div>
 
-    {% block content %}
-    <div class="row justify-content-center">
-        <div class="col-lg-8 col-md-10">
-            <div class="card shadow-lg border-0">
-                <div class="card-header bg-primary text-white text-center">
-                    <h2 class="mb-0">Feuille d'Émargement</h2>
-                </div>
-                <div class="card-body p-4">
-                    <h4 class="card-title text-success">{{ matiere_prog.matiere.libelle }}</h4>
-                    <p class="text-muted mb-4">
-                        <strong>Professeur:</strong> {{ matiere_prog.professeur.nom }} {{ matiere_prog.professeur.prenoms }}
-                        | <strong>Niveau:</strong> {{ matiere_prog.niveau.libelle }} {{ matiere_prog.niveau.niv }} ({{ matiere_prog.filiere.code }})
+                    <p class="text-sm text-gray-700 pt-2 border-t border-gray-200">
+                        Volume Prévu : <strong class="text-blue-600">{{ matiere_prog.nbr_heure }}h</strong> | 
+                        Heures Réalisées : <strong class="text-blue-600">{{ matiere_prog.total_heures_faites|default:"0.00"|floatformat:2 }}h</strong>
                     </p>
 
-                    <form method="post">
-                        {% csrf_token %}
-                        
-                        <!-- Le tag crispy rend le formulaire avec le style Bootstrap 5 -->
-                        {{ form|crispy }}
-                        
-                        <div class="d-grid gap-2 mt-4">
-                            <button type="submit" class="btn btn-success btn-lg">
-                                Enregistrer la Séance d'Émargement
-                            </button>
-                            <a href="{% url 'gestion_cours:home' %}" class="btn btn-outline-secondary">
-                                Annuler et Retourner à la Liste
-                            </a>
-                        </div>
-                    </form>
+                    <p class="text-md font-bold pt-1">
+                        Volume Restant : 
+                        {% if volume_restant <= 0 %}
+                            <span class="text-green-600">0.00h (Cours Complété)</span>
+                        {% else %}
+                            <span class="text-red-600">{{ volume_restant|floatformat:2 }}h</span>
+                        {% endif %}
+                    </p>
                 </div>
+
+                <form method="post" class="space-y-4">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.date_emar|as_crispy_field }}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            {{ form.heure_eff|as_crispy_field }}
+                        </div>
+                    </div>
+                    
+                    <hr class="mt-5 mb-4">
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg shadow-lg">
+                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            Enregistrer la Séance d'Émargement
+                        </button>
+                        <a href="{% url 'gestion_cours:emargement_selection_cours' %}"
+                            class="btn btn-outline-secondary">
+                            Annuler et Retourner à la Sélection des Cours
+                        </a>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
-    {% endblock content %}
-    
+</div>
+{% endblock content %}

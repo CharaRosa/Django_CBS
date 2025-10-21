@@ -1,134 +1,138 @@
-{% extends "base.html" %} 
+{% extends "base.html" %}
 {% load static %}
-{% block title %}Tableau de Bord Principal{% endblock title %}
+{% load crispy_forms_tags %}
+
+{% block title %} Tableau de Bord Principal{% endblock title %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="text-4xl fw-bold text-primary">Tableau de Bord | Administration Pédagogique</h1>
-        <small class="text-muted">Année Active : <span class="fw-bold">{{ annee_active.annee_accademique|default:"N/A" }}</span></small>
+<div class="space-y-8">
+    
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+        <h1 class="text-3xl font-extrabold text-gray-900 mb-2 md:mb-0">
+            Tableau de Bord | Administration Pédagogique
+        </h1>
+        <div class="text-sm font-medium text-gray-600 bg-white p-2 rounded-lg shadow-sm">
+            Année Active : <span class="text-amber-700 font-semibold">{{ annee_active.annee_accademique|default:"N/A" }}</span>
+        </div>
     </div>
-
-    <div class="row mb-5">
-        <div class="col-md-4">
-            <div class="card text-white bg-info shadow-lg h-100">
-                <div class="card-body">
-                    <p class="card-title text-uppercase fw-light">Heures Totales Enseignées</p>
-                    <p class="card-text fs-1 fw-bold mt-1">{{ heures_enseignees|floatformat:1 }}h</p>
-                </div>
+    
+    {% if messages %}
+        {% for message in messages %}
+            <div class="p-4 mb-4 text-sm 
+                {% if message.tags == 'error' %}text-red-700 bg-red-100 border border-red-400{% else %}text-green-700 bg-green-100 border border-green-400{% endif %} 
+                rounded-lg" role="alert">
+                {{ message }}
             </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        
+        <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-amber-600">
+            <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Heures Totales Enseignées</p>
+            <p class="text-4xl font-bold text-amber-700 mt-1">{{ heures_enseignees|floatformat:1|default:0 }}<span class="text-2xl font-semibold">h</span></p>
         </div>
 
-        <div class="col-md-4">
-            <div class="card text-white bg-warning shadow-lg h-100">
-                <div class="card-body">
-                    <p class="card-title text-uppercase fw-light">Matières Enregistrées</p>
-                    <p class="card-text fs-1 fw-bold mt-1">{{ matieres_actives }}</p>
-                </div>
-            </div>
+        <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-green-500">
+            <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Matières Enregistrées</p>
+            <p class="text-4xl font-bold text-green-700 mt-1">{{ matieres_actives }}</p>
         </div>
         
-        <div class="col-md-4">
-            <div class="card text-white bg-success shadow-lg h-100">
-                <div class="card-body">
-                    <p class="card-title text-uppercase fw-light">Professeurs Actifs</p>
-                    <p class="card-text fs-1 fw-bold mt-1">{{ professeurs_actifs }}</p>
-                </div>
-            </div>
+        <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-blue-500">
+            <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Professeurs Actifs</p>
+            <p class="text-4xl font-bold text-blue-700 mt-1">{{ professeurs_actifs }}</p>
         </div>
+        
     </div>
+
+    <h2 class="text-2xl font-bold text-gray-800 mt-10 mb-4">Progression des Cours</h2>
     
-    <h2 class="h3 fw-bold text-gray-800 mb-3">Progression des Cours ({{ annee_active.annee_accademique|default:"-" }})</h2>
-    
-    <div class="card shadow-lg">
-        <div class="card-body p-0">
-            {% if cours_list %}
-            <div class="table-responsive">
-                <table class="table table-striped table-hover mb-0">
-                    <thead class="bg-light">
-                        <tr>
-                            <th>Matière & Niveau</th>
-                            <th>Professeur</th>
-                            <th>Volume (H)</th>
-                            <th class="text-center">Progression</th>
-                            <th class="text-center">Émargement</th>
-                            <th class="text-center">Évaluation</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for cours in cours_list %}
-                        <tr>
-                            <td class="align-middle fw-bold">
-                                {{ cours.matiere.libelle }}<br>
-                                <span class="badge bg-secondary">{{ cours.niveau.libelle }} {{ cours.niveau.niv }} - {{ cours.filiere.code }} ({{ cours.semestre }})</span>
-                            </td>
-                            <td class="align-middle">{{ cours.professeur.nom }} {{ cours.professeur.prenoms }}</td>
-                            <td class="align-middle text-nowrap">
-                                <span class="fw-bold text-primary">{{ cours.total_heures_faites|floatformat:1|default:0 }}h</span> / {{ cours.nbr_heure|floatformat:1 }}h
-                                {% if cours.heures_restantes < 0 %}
-                                    <span class="badge bg-danger ms-2">Dépassé</span>
-                                {% elif cours.heures_restantes == 0 %}
-                                    <span class="badge bg-success ms-2">Terminé</span>
-                                {% endif %}
-                            </td>
-                            <td class="align-middle text-center">
-                                <div class="progress" style="height: 20px;">
-                                    <div class="progress-bar 
-                                        {% if cours.progression_reelle >= 100 %}bg-success{% elif cours.alerte_retard %}bg-danger{% else %}bg-primary{% endif %}" 
-                                        role="progressbar" 
-                                        style="width: {{ cours.progression_reelle|floatformat:0 }}%" 
-                                        aria-valuenow="{{ cours.progression_reelle|floatformat:0 }}" 
-                                        aria-valuemin="0" 
-                                        aria-valuemax="100">
-                                        {{ cours.progression_reelle|floatformat:0 }}%
-                                    </div>
-                                </div>
-                                {% if cours.decalage and cours.decalage > 10 %}
-                                    <small class="text-danger fw-bold">Retard: {{ cours.decalage|floatformat:0 }}%</small>
-                                {% elif cours.decalage and cours.decalage < -10 %}
-                                    <small class="text-success fw-bold">Avance: {{ cours.decalage|floatformat:0|slice:"1:" }}%</small>
-                                {% endif %}
-                            </td>
-                            <td class="text-center align-middle">
-                                <a href="{% url 'gestion_cours:emargement' cours.pk %}" class="btn btn-sm btn-info" title="Émarger la séance">
-                                    <i class="fas fa-calendar-alt"></i>
-                                </a>
-                            </td>
-                            <td class="text-center align-middle">
-                                {% if cours.progression_reelle >= 100 %}
-                                    <a href="{% url 'gestion_cours:evaluation' cours.pk %}" class="btn btn-sm {% if cours.est_evalue %}btn-success{% else %}btn-warning{% endif %}" title="{% if cours.est_evalue %}Modifier l'évaluation{% else %}Évaluer le cours{% endif %}">
-                                        <i class="fas {% if cours.est_evalue %}fa-check{% else %}fa-star{% endif %}"></i>
-                                    </a>
-                                {% else %}
-                                    <button class="btn btn-sm btn-secondary" disabled title="Évaluation disponible après 100% de progression">
-                                        <i class="fas fa-lock"></i>
-                                    </button>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            {% else %}
-            <div class="alert alert-warning m-4" role="alert">
-                Aucun cours n'est programmé pour l'année académique active.
-            </div>
-            {% endif %}
+    <div class="bg-white p-6 rounded-xl shadow-lg overflow-x-auto">
+        {% if cours_list %}
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Matière & Niveau</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Professeur</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Volume (H)</th>
+                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Progression</th>
+                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                {% for cours in cours_list %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-semibold text-gray-900">{{ cours.matiere.libelle }}</div>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                            {{ cours.niveau.libelle }} {{ cours.niveau.niv }} - {{ cours.filiere.code }} ({{ cours.semestre }})
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ cours.professeur.nom }} {{ cours.professeur.prenoms }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-medium">
+                        <span class="text-amber-600">{{ cours.total_heures_faites|floatformat:1|default:0 }}h</span> / {{ cours.nbr_heure|floatformat:1 }}h
+                        {% if cours.heures_restantes < 0 %}
+                            <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Dépassé</span>
+                        {% elif cours.heures_restantes == 0 and cours.progression_reelle >= 100 %}
+                            <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Terminé</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div class="h-2.5 rounded-full 
+                                {% if cours.progression_reelle >= 100 %}bg-green-600{% elif cours.alerte_retard %}bg-red-600{% else %}bg-amber-600{% endif %}" 
+                                style="width: {{ cours.progression_reelle|floatformat:0 }}%">
+                            </div>
+                        </div>
+                        <div class="mt-1 text-xs font-medium text-gray-600">
+                            {{ cours.progression_reelle|floatformat:0 }}%
+                            {% if cours.decalage and cours.decalage > 10 %}
+                                <span class="text-red-600 ml-1">(Retard: {{ cours.decalage|floatformat:0 }}%)</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium space-x-2">
+                        <a href="{% url 'gestion_cours:emargement_saisir' cours.pk %}" class="text-amber-600 hover:text-amber-900 p-2 rounded-full hover:bg-amber-50" title="Émarger la séance">
+                            <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        </a>
+                        {% if cours.progression_reelle >= 100 %}
+                            <a href="{% url 'gestion_cours:evaluation' cours.pk %}" class="p-2 rounded-full 
+                                {% if cours.est_evalue %}text-green-600 hover:text-green-900 hover:bg-green-50{% else %}text-amber-600 hover:text-amber-900 hover:bg-amber-50{% endif %}" 
+                                title="{% if cours.est_evalue %}Modifier l'évaluation{% else %}Évaluer le cours{% endif %}">
+                                <svg class="w-5 h-5 inline" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M9.049 2.927c.3-.921 1.691-.921 1.99 0l3.007 9.256a1 1 0 01-.849 1.341l-7.234.001a1 1 0 01-.849-1.341l3.007-9.256z"></path></svg>
+                            </a>
+                        {% else %}
+                            <span class="text-gray-400 p-2 rounded-full cursor-not-allowed" title="Évaluation disponible après 100% de progression">
+                                <svg class="w-5 h-5 inline" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path></svg>
+                            </span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="p-4 bg-gray-50 border border-gray-200 rounded-lg text-gray-600">
+            Aucun cours n'est programmé pour l'année académique active.
         </div>
+        {% endif %}
     </div>
-    
-    <h2 class="h4 fw-bold mt-5 mb-3">Accès Rapide (Gestion CRUD)</h2>
-    <div class="row">
-        <div class="col-md-6 col-lg-3 mb-3">
-            <a href="{% url 'gestion_cours:professeur_list' %}" class="btn btn-primary d-block shadow">Gérer les Professeurs</a>
-        </div>
-        <div class="col-md-6 col-lg-3 mb-3">
-            <a href="{% url 'gestion_cours:matiere_list' %}" class="btn btn-primary d-block shadow">Gérer les Matières</a>
-        </div>
-        <div class="col-md-6 col-lg-3 mb-3">
-            <a href="{% url 'gestion_cours:historique' %}" class="btn btn-secondary d-block shadow">Voir l'Historique</a>
-        </div>
-        </div>
+
+    <h2 class="text-2xl font-bold text-gray-800 mt-10 mb-4">Accès Rapide (Gestion CRUD)</h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <a href="{% url 'gestion_cours:professeur_list' %}" class="bg-amber-600 text-white p-4 rounded-lg shadow hover:bg-amber-700 text-center font-semibold transition duration-150">
+            Gérer les Professeurs
+        </a>
+        <a href="{% url 'gestion_cours:matiere_list' %}" class="bg-amber-600 text-white p-4 rounded-lg shadow hover:bg-amber-700 text-center font-semibold transition duration-150">
+            Gérer les Matières
+        </a>
+        <a href="{% url 'gestion_cours:historique' %}" class="bg-gray-600 text-white p-4 rounded-lg shadow hover:bg-gray-700 text-center font-semibold transition duration-150">
+            Voir l'Historique
+        </a>
+        <a href="{% url 'gestion_cours:emargement_selection_cours' %}" class="bg-amber-500 text-white p-4 rounded-lg shadow hover:bg-amber-600 text-center font-semibold transition duration-150">
+            Saisie Emargement AP
+        </a>
+    </div>
+
 </div>
 {% endblock content %}
