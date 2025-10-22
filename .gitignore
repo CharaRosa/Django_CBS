@@ -8,3 +8,7 @@ __pycache__/
 
 # Le binaire tailwindcss volumineux
 tailwindcss
+# In your .gitignore file, add:
+/tailwindcss
+# Or if it's inside a specific directory, e.g., node_modules
+/node_modules
