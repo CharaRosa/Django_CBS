@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'gestion_cours.apps.GestionCoursConfig',
+    'django.contrib.humanize',
+    'django_filters',
     'crispy_forms',           # <--- AJOUTER
     'crispy_bootstrap5',      # <--- AJOUTER
 ]

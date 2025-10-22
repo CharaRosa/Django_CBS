@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Historique des Émargements{% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-extrabold text-cbs-primary mb-6">Historique Global des Émargements</h1>
+<p class="text-lg text-gray-800 mb-6">Année Académique Active : <span class="font-semibold">{{ annee_active }}</span></p>
+
+<!-- Zone de Filtre -->
+<div class="bg-white p-6 rounded-xl shadow-lg mb-6 border border-gray-200">
+    <h2 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">Filtrer les Émargements</h2>
+    <form method="get" class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+        
+        {% for field in filter.form %}
+        <div class="col-span-1">
+            <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">{{ field.label }}</label>
+            {{ field }}
+        </div>
+        {% endfor %}
+        
+        <div class="col-span-1 flex space-x-2">
+            <button type="submit" class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-cbs-primary hover:bg-cbs-dark transition duration-150">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd" />
+                </svg>
+                Filtrer
+            </button>
+            {% if request.GET %}
+            <a href="{% url 'gestion_cours:historique' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-100 transition duration-150 shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Effacer
+            </a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+<!-- Fin Zone de Filtre -->
+
+{% if not request.GET and historique|length == 50 %}
+<p class="text-gray-600 mb-4 italic">Affichage des **50 dernières** entrées uniquement. Utilisez les filtres pour voir l'historique complet.</p>
+{% else %}
+<p class="text-gray-600 mb-4">Affichage de **{{ historique|length }}** résultat(s) correspondant à votre recherche.</p>
+{% endif %}
+
+
+{% if historique %}
+<div class="bg-white p-6 rounded-xl shadow-lg overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-cbs-primary"> 
+            <tr>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider rounded-tl-xl">Date</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Matière</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Filière / Niveau</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Professeur</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider rounded-tr-xl">Durée (H)</th>
+            </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+            {% for emargement in historique %}
+            {% with matiere_prog=emargement.matiere_programmer %}
+            <tr class="hover:bg-amber-50 transition duration-150"> 
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {{ emargement.date_emar|date:"d M Y" }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    <a href="{% url 'gestion_cours:historique_cours' pk=matiere_prog.pk %}" class="text-cbs-primary hover:text-cbs-dark font-semibold">
+                        {{ matiere_prog.matiere.libelle }}
+                    </a>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    {{ matiere_prog.filiere.code }} - {{ matiere_prog.niveau.libelle }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    {{ matiere_prog.professeur }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                    <span class="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        {{ emargement.heure_eff }}
+                    </span>
+                </td>
+            </tr>
+            {% endwith %}
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-md" role="alert"> 
+    <p class="font-bold">Aucun Résultat</p>
+    <p>Aucun émargement ne correspond aux critères de recherche ou aucun n'a été enregistré pour l'année active ({{ annee_active }}).</p>
+</div>
+{% endif %}
+{% endblock content %}

@@ -9,6 +9,12 @@ urlpatterns = [
     # ------------------ Vues d'Authentification -------------------
     path('login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    # Chemin pour le tableau de bord
+    path('dashboard/', views.home_view, name='dashboard'),
+    
+    # Chemin que le bouton du tableau de bord appelle
+    path('cours/<int:pk>/historique/', views.historique_cours_view, name='historique_cours'),
+    
 
     # ------------------ Vues Fonctionnelles Générales -------------
     
@@ -19,7 +25,7 @@ urlpatterns = [
     path('dashboard/', views.home_view, name='home'),
     
     # Évaluation (pour l'AP) : Saisie de l'évaluation qualitative d'un cours
-    path('evaluer/<int:pk>/', views.evaluation_view, name='evaluation'),
+    # ANCIEN CHEMIN SUPPRIMÉ: path('evaluer/<int:pk>/', views.evaluation_view, name='evaluation'),
     
     # Historique des émargements (pour l'AP)
     path('historique/', views.historique_view, name='historique'),
@@ -30,7 +36,6 @@ urlpatterns = [
     path('ap/emargement/selection/', views.EmargementSelectionCoursView.as_view(), name='emargement_selection_cours'),
     
     # 2. ÉTAPE 2: Saisie de la séance d'émargement (utilise votre vue fonctionnelle existante)
-    # NOTE: L'ancienne URL 'emargement/<int:pk>/' est remplacée par celle-ci pour être plus explicite.
     path('ap/emargement/<int:pk>/saisir/', views.emargement_view, name='emargement_saisir'),
     
     # ------------------ Vues de Gestion AP (CRUD) -------------------
@@ -70,8 +75,10 @@ urlpatterns = [
     path('ap/cours/creer/', views.MatiereProgrammeeCreateView.as_view(), name='matiereprogrammee_create'),
     path('ap/cours/modifier/<int:pk>/', views.MatiereProgrammeeUpdateView.as_view(), name='matiereprogrammee_update'),
     path('ap/cours/supprimer/<int:pk>/', views.MatiereProgrammeeDeleteView.as_view(), name='matiereprogrammee_delete'),
-
-    # 7. Création d'Emargement (Vue générique AP pour l'administration, si elle est toujours nécessaire)
-    # Laissez-la si vous utilisez cette URL ailleurs que pour le flux AP. Sinon, vous pouvez la supprimer.
-    # path('ap/emargement/creer/', views.EmargementCreateView.as_view(), name='emargement_create_ap'), 
+    
+    # 7. Gestion des Évaluations 
+    path('ap/evaluations/', views.EvaluationListView.as_view(), name='evaluation_list'), 
+    
+    # Gestion de l'évaluation (Création/Modification)
+    path('cours/<int:pk>/evaluer/', views.EvaluationManagementView.as_view(), name='evaluation_management'),
 ]

@@ -95,7 +95,7 @@
         </div>
     </header>
     
-    <div class="flex flex-1 overflow-hidden">
+    <div class="flex flex-1 h-screen overflow-hidden"> 
 
         <div id="sidebar-overlay" class="sidebar-overlay fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden" onclick="toggleSidebar()"></div>
 
@@ -163,7 +163,7 @@
                         Émargement
                     </a>
 
-                    <a href="/admin/gestion_cours/evaluation/" class="flex items-center p-3 rounded-lg text-gray-700 hover:bg-cbs-light hover:text-cbs-primary transition duration-150 ease-in-out">
+                    <a href="{% url 'gestion_cours:evaluation_list' %}" class="flex items-center p-3 rounded-lg text-gray-700 hover:bg-cbs-light hover:text-cbs-primary transition duration-150 ease-in-out">
                          <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-4m0-4l3-3m0 0l3 3m-3-3v8m0 0l3 3m-3-3l-3 3"></path></svg>
                         Évaluations
                     </a>
@@ -193,8 +193,8 @@
             </div>
         </nav>
 
-        <main class="flex-1 p-4 md:p-8 overflow-y-auto md:ml-64">
-            <div class="max-w-7xl mx-auto">
+        <main class="flex-1 p-4 md:p-8 overflow-y-auto"> 
+            <div class="max-w-7xl mx-auto h-full">
                 {% block content %}
                 <h1 class="text-3xl font-extrabold text-gray-900 mb-6">Bienvenue sur le Tableau de Bord</h1>
                 <div class="bg-white p-6 rounded-xl shadow-lg">

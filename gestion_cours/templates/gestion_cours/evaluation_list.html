@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Liste des Évaluations{% endblock title %}
+
+{% block content %}
+<h1 class="text-3xl font-extrabold text-gray-900 mb-6 border-b pb-3">Liste des Évaluations Qualitatives</h1>
+
+{% if evaluations %}
+<div class="overflow-x-auto shadow-lg sm:rounded-lg">
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+            <tr>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Matière</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Professeur</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Évalué par</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Résumé de l'Évaluation</th>
+            </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+            {% for evaluation in evaluations %}
+            <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {{ evaluation.matiere_programmer.matiere.libelle }} 
+                    ({{ evaluation.matiere_programmer.filiere.code }})
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                    {{ evaluation.matiere_programmer.professeur.nom }}
+                </td>
+                 <td class="px-6 py-4 whitespace-nowrap text-sm text-indigo-600 font-semibold">
+                    {{ evaluation.utilisateur_evaluation.username|default:"N/A" }}
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">
+                    {{ evaluation.resume_evaluation }}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p class="text-gray-500 p-4 bg-white rounded-lg shadow">Aucune évaluation qualitative n'a encore été enregistrée.</p>
+{% endif %}
+{% endblock content %}

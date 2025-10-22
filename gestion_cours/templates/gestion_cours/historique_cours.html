@@ -1,0 +1,93 @@
+{% extends 'base.html' %} 
+{% load static %}
+
+{% block title %}Historique : {{ matiere_prog.matiere.libelle }} - {{ matiere_prog.niveau.libelle }}{% endblock %}
+
+{% block content %}
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <div class="flex justify-between items-center mb-6 border-b pb-3">
+        <h1 class="text-3xl font-extrabold text-gray-900">
+            Historique détaillé du Cours
+        </h1>
+        <a href="{% url 'gestion_cours:home' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cbs-primary">
+            &larr; Retour au Tableau de Bord
+        </a>
+    </div>
+
+    <div class="bg-white shadow overflow-hidden sm:rounded-lg border-l-4 border-cbs-primary p-6 mb-6">
+        <h2 class="text-2xl font-bold text-cbs-primary mb-2">
+            {{ matiere_prog.matiere.libelle }}
+            <span class="text-lg font-normal text-gray-500">({{ matiere_prog.filiere.code }} - {{ matiere_prog.niveau.libelle }} - {{ matiere_prog.semestre }})</span>
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-x-6 gap-y-1 text-sm mt-4">
+            <p class="text-gray-700"><strong class="font-semibold text-gray-900">Professeur :</strong> {{ matiere_prog.professeur.prenoms }} {{ matiere_prog.professeur.nom }}</p>
+            <p class="text-gray-700"><strong class="font-semibold text-gray-900">Année Académique :</strong> {{ matiere_prog.annee_academique.annee_accademique }}</p>
+            <p class="text-gray-700"><strong class="font-semibold text-gray-900">Volume Prévu :</strong> {{ matiere_prog.nbr_heure|floatformat:2 }} heures</p>
+            <p class="text-gray-700">
+                <strong class="font-semibold text-gray-900">Heures Faites :</strong> 
+                <span class="text-cbs-primary font-bold">{{ progression_details.total_heures_faites|floatformat:2 }}h</span>
+            </p> 
+        </div>
+    </div>
+    
+    <h3 class="text-lg font-semibold text-gray-800 border-b pb-1 mb-4">Résumé et Progression</h3>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div class="bg-white shadow-lg rounded-lg p-4 border-l-4 border-green-500">
+            <p class="text-sm font-medium text-gray-500">Heures Effectuées</p>
+            <p class="text-2xl font-bold text-green-600 mt-1">{{ progression_details.total_heures_faites|floatformat:2 }}h</p>
+        </div>
+        <div class="bg-white shadow-lg rounded-lg p-4 border-l-4 border-yellow-500">
+            <p class="text-sm font-medium text-gray-500">Heures Restantes</p>
+            <p class="text-2xl font-bold text-yellow-600 mt-1">{{ progression_details.volume_restant|floatformat:2 }}h</p>
+        </div>
+        <div class="bg-white shadow-lg rounded-lg p-4 border-l-4 border-cbs-primary">
+            <p class="text-sm font-medium text-gray-500">Progression</p>
+            <p class="text-2xl font-bold text-cbs-primary mt-1">{{ progression_details.progression|floatformat:0 }}%</p>
+        </div>
+    </div>
+
+    <h3 class="text-xl font-bold text-gray-900 mb-4 border-b pb-2">Liste des Séances Émargées ({{ historique_emargement|length }} séances)</h3>
+
+    {% if historique_emargement %}
+    <div class="overflow-x-auto shadow-lg sm:rounded-lg"> 
+        <div class="bg-white">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50 sticky top-0 z-10">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Heures Effectuées</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thème Abordé</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Émargé par (Utilisateur)</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for emargement in historique_emargement %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-3 whitespace-nowrap text-sm font-medium text-gray-900">{{ emargement.date_emar|date:"d/m/Y" }}</td>
+                        <td class="px-6 py-3 whitespace-nowrap text-sm text-cbs-primary font-semibold">{{ emargement.heure_eff|floatformat:2 }}h</td>
+                        <td class="px-6 py-3 text-sm text-gray-700 max-w-lg overflow-hidden truncate hover:whitespace-normal hover:overflow-visible">{{ emargement.theme_aborde }}</td> 
+                        <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-500">
+                            {% with user=emargement.emarge_par %}
+                                {% if user %}
+                                    {{ user.get_full_name|default:user.username }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            {% endwith %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="p-4 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-700 rounded-md">
+        <p class="font-medium">Aucune séance émargée pour le moment.</p>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock content %}
