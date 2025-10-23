@@ -387,16 +387,6 @@ class EvaluationManagementView(BaseAPView, UpdateView):
         
         return context
 
-
-# L'ancienne fonction évaluation_view est commentée/supprimée car elle est remplacée par EvaluationManagementView
-# @login_required
-# @user_passes_test(est_administrateur_pedagogique, login_url='/') 
-# def evaluation_view(request, pk):
-#     """DEVIENT OBSOLETE - REMPLACÉ PAR EvaluationManagementView"""
-#     ...
-#     return render(request, 'gestion_cours/evaluation_form.html', context)
-
-
 # ----------------------------------------------------------------------
 # VUES FONCTIONNELLES (Landing, Tableau de Bord, Émargement, Historique)
 # ----------------------------------------------------------------------
@@ -619,7 +609,7 @@ def historique_cours_view(request, pk):
     # 2. Récupère tous les émargements pour ce cours, triés par date décroissante
     historique_emargement_list = Emargement.objects.filter(
         matiere_programmer=matiere_prog
-    ).order_by('-date_emar').select_related('emarge_par') 
+    ).order_by('-date_emar')
 
     # 3. Calcule la progression pour l'affichage
     progression_details = calculer_progression(matiere_prog, date.today())

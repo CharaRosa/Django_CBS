@@ -20,6 +20,7 @@
         <h2 class="text-2xl font-bold text-cbs-primary mb-2">
             {{ matiere_prog.matiere.libelle }}
             <span class="text-lg font-normal text-gray-500">({{ matiere_prog.filiere.code }} - {{ matiere_prog.niveau.libelle }} - {{ matiere_prog.semestre }})</span>
+            
         </h2>
         <div class="grid grid-cols-1 md:grid-cols-4 gap-x-6 gap-y-1 text-sm mt-4">
             <p class="text-gray-700"><strong class="font-semibold text-gray-900">Professeur :</strong> {{ matiere_prog.professeur.prenoms }} {{ matiere_prog.professeur.nom }}</p>
@@ -32,21 +33,8 @@
         </div>
     </div>
     
-    <h3 class="text-lg font-semibold text-gray-800 border-b pb-1 mb-4">Résumé et Progression</h3>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <div class="bg-white shadow-lg rounded-lg p-4 border-l-4 border-green-500">
-            <p class="text-sm font-medium text-gray-500">Heures Effectuées</p>
-            <p class="text-2xl font-bold text-green-600 mt-1">{{ progression_details.total_heures_faites|floatformat:2 }}h</p>
-        </div>
-        <div class="bg-white shadow-lg rounded-lg p-4 border-l-4 border-yellow-500">
-            <p class="text-sm font-medium text-gray-500">Heures Restantes</p>
-            <p class="text-2xl font-bold text-yellow-600 mt-1">{{ progression_details.volume_restant|floatformat:2 }}h</p>
-        </div>
-        <div class="bg-white shadow-lg rounded-lg p-4 border-l-4 border-cbs-primary">
-            <p class="text-sm font-medium text-gray-500">Progression</p>
-            <p class="text-2xl font-bold text-cbs-primary mt-1">{{ progression_details.progression|floatformat:0 }}%</p>
-        </div>
-    </div>
+    {# ANCIENNE SECTION "Résumé et Progression" SUPPRIMÉE #}
+    {# Les lignes 40 à 50 ont été retirées #}
 
     <h3 class="text-xl font-bold text-gray-900 mb-4 border-b pb-2">Liste des Séances Émargées ({{ historique_emargement|length }} séances)</h3>
 
@@ -68,15 +56,26 @@
                         <td class="px-6 py-3 whitespace-nowrap text-sm font-medium text-gray-900">{{ emargement.date_emar|date:"d/m/Y" }}</td>
                         <td class="px-6 py-3 whitespace-nowrap text-sm text-cbs-primary font-semibold">{{ emargement.heure_eff|floatformat:2 }}h</td>
                         <td class="px-6 py-3 text-sm text-gray-700 max-w-lg overflow-hidden truncate hover:whitespace-normal hover:overflow-visible">{{ emargement.theme_aborde }}</td> 
+                        
                         <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-500">
                             {% with user=emargement.emarge_par %}
                                 {% if user %}
-                                    {{ user.get_full_name|default:user.username }}
+                                    <span class="font-medium text-gray-900">{{ user.get_full_name|default:user.username }}</span>
+                                    <br>
+                                    {# Logique pour afficher le rôle (Superuser ou Groupe) #}
+                                    {% if user.is_superuser %}
+                                        <span class="text-xs px-2 inline-flex leading-5 font-semibold rounded-full bg-red-100 text-red-800">Administrateur Système</span>
+                                    {% elif user.groups.all %}
+                                        <span class="text-xs px-2 inline-flex leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">{{ user.groups.first.name }}</span>
+                                    {% else %}
+                                        <span class="text-xs text-gray-400">Utilisateur (Pas de groupe)</span>
+                                    {% endif %}
                                 {% else %}
-                                    N/A
+                                    <span class="text-sm font-bold text-red-500">N/A (Donnée Manquante)</span>
                                 {% endif %}
                             {% endwith %}
                         </td>
+                        
                     </tr>
                     {% endfor %}
                 </tbody>
