@@ -1,0 +1,15 @@
+{% load static %}
+
+<nav id="sidebar" class="w-64 bg-white shadow-xl z-40 flex flex-col flex-shrink-0 h-full">
+            
+    <div class="px-6 mb-4 md:hidden">
+         {% if user.is_authenticated %}
+            <p class="text-sm font-medium text-gray-600">Connecté: <span class="text-cbs-primary">{{ user.username }}</span></p>
+        {% endif %}
+    </div>
+
+    <div class="flex-1 space-y-2 px-4 overflow-y-auto">
+        
+        </div>
+
+    </nav>

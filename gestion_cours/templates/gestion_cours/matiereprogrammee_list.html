@@ -8,55 +8,102 @@
 
 <div class="mb-4 flex justify-between items-center">
     <a href="{% url 'gestion_cours:matiereprogrammee_create' %}" class="flex items-center text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 py-2 px-4 rounded-lg transition duration-150 shadow-md">
-        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
         Programmer un Cours
     </a>
+    
+    <!-- Boutons d'Export -->
+    <div class="flex space-x-2">
+        <a href="?{% for key, value in request.GET.items %}{% if key != 'export' %}{{ key }}={{ value }}&{% endif %}{% endfor %}export=excel" 
+           class="flex items-center text-sm font-medium text-white bg-green-600 hover:bg-green-700 py-2 px-4 rounded-lg transition duration-150 shadow-md">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            Export Excel
+        </a>
+        <a href="?{% for key, value in request.GET.items %}{% if key != 'export' %}{{ key }}={{ value }}&{% endif %}{% endfor %}export=pdf" 
+           class="flex items-center text-sm font-medium text-white bg-red-600 hover:bg-red-700 py-2 px-4 rounded-lg transition duration-150 shadow-md">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+            Export PDF
+        </a>
+    </div>
 </div>
 
-{% include "gestion_cours/includes/messages.html" %} 
+{% include "gestion_cours/includes/messages.html" %}
 
-<div class="bg-white rounded-xl shadow-lg overflow-x-auto">
+<!-- ZONE DE FILTRES -->
+<div class="bg-white p-6 rounded-xl shadow-lg mb-6 border border-gray-200">
+    <h2 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">
+        <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+        Filtrer les Cours
+    </h2>
+    <form method="get" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        {% for field in filter.form %}
+        <div>
+            <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                {{ field.label }}
+            </label>
+            {{ field }}
+        </div>
+        {% endfor %}
+        <div class="flex items-end space-x-2">
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-150 flex-1">
+                <svg class="w-5 h-5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                Filtrer
+            </button>
+            <a href="{% url 'gestion_cours:matiereprogrammee_list' %}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition duration-150">
+                Réinitialiser
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- TABLEAU DES RÉSULTATS -->
+<div class="bg-white p-6 rounded-xl shadow-lg overflow-x-auto">
     {% if object_list %}
+    <p class="text-sm text-gray-600 mb-4">{{ object_list|length }} cours trouvé(s)</p>
     <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
             <tr>
-                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Matière / Cours</th>
-                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Filière & Niveau</th>
-                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Professeur</th>
-                <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Année & Volume</th>
-                <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Matière</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Filière</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Niveau</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Professeur</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Semestre</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Vol. Horaire</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">H. Faites</th>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Actions</th>
             </tr>
         </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                {% for cours in object_list %}
-                <tr class="hover:bg-amber-50 transition duration-100">
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {{ cours.matiere.libelle }} <span class="text-gray-500 text-xs">({{ cours.semestre }})</span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                        {{ cours.filiere.code }} - {{ cours.niveau.libelle }} {{ cours.niveau.niv }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                        {{ cours.professeur.nom }} {{ cours.professeur.prenoms }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-600">
-                        {{ cours.annee_academique.annee_accademique }} ({{ cours.nbr_heure }} h)
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium space-x-3">
-                        <a href="{% url 'gestion_cours:matiereprogrammee_update' cours.pk %}" class="text-amber-600 hover:text-amber-800" title="Modifier">Modifier</a>
-                        <a href="{% url 'gestion_cours:matiereprogrammee_delete' cours.pk %}" class="text-red-600 hover:text-red-800" title="Supprimer">Supprimer</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <div class="p-6 text-center text-gray-500">
-            <p>Aucun cours n'est encore programmé pour aucune année académique.</p>
-            <a href="{% url 'gestion_cours:matiereprogrammee_create' %}" class="mt-4 inline-flex items-center text-sm font-medium text-white **bg-amber-600** hover:**bg-amber-700** py-2 px-4 rounded-lg transition duration-150 shadow-md">
-                Programmer le premier Cours
+        <tbody class="bg-white divide-y divide-gray-200">
+            {% for cours in object_list %}
+            <tr class="hover:bg-gray-50 transition duration-150">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ cours.matiere.libelle }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ cours.filiere.code }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ cours.niveau.libelle }} {{ cours.niveau.niv }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ cours.professeur }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ cours.get_semestre_display }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ cours.nbr_heure }}h</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ cours.total_heures_faites|default:"0" }}h</td>
+                <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                    <a href="{% url 'gestion_cours:matiereprogrammee_update' cours.pk %}" class="text-indigo-600 hover:text-indigo-900 mr-3">Modifier</a>
+                    <a href="{% url 'gestion_cours:matiereprogrammee_delete' cours.pk %}" class="text-red-600 hover:text-red-900">Supprimer</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="text-center py-12">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-900">Aucun cours programmé</h3>
+        <p class="mt-1 text-sm text-gray-500">Commencez par programmer un nouveau cours.</p>
+        <div class="mt-6">
+            <a href="{% url 'gestion_cours:matiereprogrammee_create' %}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-amber-600 hover:bg-amber-700">
+                Programmer un Cours
             </a>
         </div>
-        {% endif %}
     </div>
+    {% endif %}
+</div>
 {% endblock content %}

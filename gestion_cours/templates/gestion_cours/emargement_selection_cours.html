@@ -15,44 +15,66 @@
         {% endfor %}
     {% endif %}
 
+    <!-- ZONE DE FILTRES -->
+    <div class="bg-white p-6 rounded-xl shadow-lg mb-6 border border-gray-200">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">
+            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+            Filtrer les Cours
+        </h2>
+        <form method="get" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {% for field in filter.form %}
+            <div>
+                <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                    {{ field.label }}
+                </label>
+                {{ field }}
+            </div>
+            {% endfor %}
+            <div class="flex items-end space-x-2">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-150 flex-1">
+                    <svg class="w-5 h-5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    Filtrer
+                </button>
+                <a href="{% url 'gestion_cours:emargement_selection' %}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition duration-150">
+                    Réinitialiser
+                </a>
+            </div>
+        </form>
+    </div>
+
     <div class="bg-white p-6 rounded-xl shadow-lg">
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Matière / Niveau</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Matière</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Filière/Niveau</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Professeur</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Volume Prévu (h)</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Heures Faites (h)</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Semestre</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vol. Horaire</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">H. Faites</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     {% for cours in cours_list %}
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm font-medium text-gray-900">{{ cours.matiere.libelle }}</div>
-                            <div class="text-xs text-gray-500">{{ cours.niveau }} ({{ cours.semestre }})</div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ cours.professeur.nom }} {{ cours.professeur.prenoms }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ cours.nbr_heure }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ cours.total_heures_faites|default:"0.00" }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <a href="{% url 'gestion_cours:emargement_saisir' pk=cours.pk %}" class="text-amber-600 hover:text-amber-900 font-semibold">
-                                Saisir Séance &rarr;
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ cours.matiere.libelle }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ cours.filiere.code }} - {{ cours.niveau.niv }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ cours.professeur }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ cours.get_semestre_display }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ cours.nbr_heure }}h</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ cours.total_heures_faites|default:"0" }}h</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                            <a href="{% url 'gestion_cours:emargement' cours.pk %}" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                Émarger
                             </a>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">
-                            Aucun cours programmé trouvé pour l'année académique active.
+                        <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">
+                            Aucun cours trouvé pour les critères sélectionnés.
                         </td>
                     </tr>
                     {% endfor %}

@@ -38,7 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'gestion_cours.apps.GestionCoursConfig',
+    #'gestion_cours.apps.GestionCoursConfig',
+    'gestion_cours',
     'django.contrib.humanize',
     'django_filters',
     'crispy_forms',           # <--- AJOUTER

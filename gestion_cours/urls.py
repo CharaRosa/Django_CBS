@@ -2,83 +2,64 @@ from django.urls import path
 from django.contrib.auth import views as auth_views
 from . import views 
 
-# Le nom de l'application est utilisé pour les chemins (ex: gestion_cours:home)
 app_name = 'gestion_cours'
 
 urlpatterns = [
-    # ------------------ Vues d'Authentification -------------------
+    # ------------------ Authentification -------------------
     path('login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
-    # Chemin pour le tableau de bord
-    path('dashboard/', views.home_view, name='dashboard'),
     
-    # Chemin que le bouton du tableau de bord appelle
-    path('cours/<int:pk>/historique/', views.historique_cours_view, name='historique_cours'),
-    
-
-    # ------------------ Vues Fonctionnelles Générales -------------
-    
-    # Nouvelle Page d'Accueil PUBLIQUE (landing page)
+    # ------------------ Pages Principales -------------------
     path('', views.landing_page, name='landing'),
-    
-    # Tableau de Bord principal AP (Destination après login)
-    path('dashboard/', views.home_view, name='home'),
-    
-    # Évaluation (pour l'AP) : Saisie de l'évaluation qualitative d'un cours
-    # ANCIEN CHEMIN SUPPRIMÉ: path('evaluer/<int:pk>/', views.evaluation_view, name='evaluation'),
-    
-    # Historique des émargements (pour l'AP)
+    path('dashboard/', views.home_view, name='home'), 
     path('historique/', views.historique_view, name='historique'),
+    path('cours/<int:pk>/historique/', views.historique_cours_view, name='historique_cours'),
+    path('historique/export/excel/', views.export_emargements_to_excel, name='export_emargements_excel'),
     
-    # ------------------ NOUVELLES VUES D'ÉMARGEMENT (Flux en 2 Étapes) -------------------
-
-    # 1. ÉTAPE 1: Sélection du cours à émarger pour l'année active
-    path('ap/emargement/selection/', views.EmargementSelectionCoursView.as_view(), name='emargement_selection_cours'),
+    # 3. Chemin pour l'export PDF (l'erreur potentielle suivante à la ligne 30)
+    path('historique/export/pdf/', views.export_emargements_to_pdf, name='export_emargements_pdf'),
     
-    # 2. ÉTAPE 2: Saisie de la séance d'émargement (utilise votre vue fonctionnelle existante)
-    path('ap/emargement/<int:pk>/saisir/', views.emargement_view, name='emargement_saisir'),
+    # ------------------ Émargements -------------------
+    path('emargement/selection/', views.emargement_selection_view, name='emargement_selection'),
+    path('emargement/<int:pk>/', views.emargement_view, name='emargement'),
     
-    # ------------------ Vues de Gestion AP (CRUD) -------------------
+    # ------------------ Professeurs -------------------
+    path('professeurs/', views.professeur_list_view, name='professeur_list'),
+    path('professeurs/create/', views.ProfesseurCreateView.as_view(), name='professeur_create'),
+    path('professeurs/<int:pk>/update/', views.ProfesseurUpdateView.as_view(), name='professeur_update'),
+    path('professeurs/<int:pk>/delete/', views.ProfesseurDeleteView.as_view(), name='professeur_delete'),
     
-    # 1. Gestion des Matières
-    path('ap/matieres/', views.MatiereListView.as_view(), name='matiere_list'),
-    path('ap/matieres/creer/', views.MatiereCreateView.as_view(), name='matiere_create'),
-    path('ap/matieres/modifier/<int:pk>/', views.MatiereUpdateView.as_view(), name='matiere_update'),
-    path('ap/matieres/supprimer/<int:pk>/', views.MatiereDeleteView.as_view(), name='matiere_delete'),
+    # ------------------ Matières -------------------
+    path('matieres/', views.MatiereListView.as_view(), name='matiere_list'),
+    path('matieres/create/', views.MatiereCreateView.as_view(), name='matiere_create'),
+    path('matieres/<int:pk>/update/', views.MatiereUpdateView.as_view(), name='matiere_update'),
+    path('matieres/<int:pk>/delete/', views.MatiereDeleteView.as_view(), name='matiere_delete'),
     
-    # 2. Gestion des Professeurs
-    path('ap/professeurs/', views.ProfesseurListView.as_view(), name='professeur_list'),
-    path('ap/professeurs/creer/', views.ProfesseurCreateView.as_view(), name='professeur_create'),
-    path('ap/professeurs/modifier/<int:pk>/', views.ProfesseurUpdateView.as_view(), name='professeur_update'),
-    path('ap/professeurs/supprimer/<int:pk>/', views.ProfesseurDeleteView.as_view(), name='professeur_delete'),
-
-    # 3. Gestion des Filières
-    path('ap/filieres/', views.FiliereListView.as_view(), name='filiere_list'),
-    path('ap/filieres/creer/', views.FiliereCreateView.as_view(), name='filiere_create'),
-    path('ap/filieres/modifier/<int:pk>/', views.FiliereUpdateView.as_view(), name='filiere_update'),
-    path('ap/filieres/supprimer/<int:pk>/', views.FiliereDeleteView.as_view(), name='filiere_delete'),
-
-    # 4. Gestion des Niveaux
-    path('ap/niveaux/', views.NiveauListView.as_view(), name='niveau_list'),
-    path('ap/niveaux/creer/', views.NiveauCreateView.as_view(), name='niveau_create'),
-    path('ap/niveaux/modifier/<int:pk>/', views.NiveauUpdateView.as_view(), name='niveau_update'),
-    path('ap/niveaux/supprimer/<int:pk>/', views.NiveauDeleteView.as_view(), name='niveau_delete'),
-
-    # 5. Gestion des Années Académiques
-    path('ap/annees/', views.AnneeAcademiqueListView.as_view(), name='anneeacademique_list'),
-    path('ap/annees/creer/', views.AnneeAcademiqueCreateView.as_view(), name='anneeacademique_create'),
-    path('ap/annees/modifier/<int:pk>/', views.AnneeAcademiqueUpdateView.as_view(), name='anneeacademique_update'),
-    path('ap/annees/supprimer/<int:pk>/', views.AnneeAcademiqueDeleteView.as_view(), name='anneeacademique_delete'),
-
-    # 6. Gestion des Matières Programmées
-    path('ap/cours/', views.MatiereProgrammeeListView.as_view(), name='matiereprogrammee_list'),
-    path('ap/cours/creer/', views.MatiereProgrammeeCreateView.as_view(), name='matiereprogrammee_create'),
-    path('ap/cours/modifier/<int:pk>/', views.MatiereProgrammeeUpdateView.as_view(), name='matiereprogrammee_update'),
-    path('ap/cours/supprimer/<int:pk>/', views.MatiereProgrammeeDeleteView.as_view(), name='matiereprogrammee_delete'),
+    # ------------------ Filières -------------------
+    path('filieres/', views.FiliereListView.as_view(), name='filiere_list'),
+    path('filieres/create/', views.FiliereCreateView.as_view(), name='filiere_create'),
+    path('filieres/<int:pk>/update/', views.FiliereUpdateView.as_view(), name='filiere_update'),
+    path('filieres/<int:pk>/delete/', views.FiliereDeleteView.as_view(), name='filiere_delete'),
     
-    # 7. Gestion des Évaluations 
-    path('ap/evaluations/', views.EvaluationListView.as_view(), name='evaluation_list'), 
+    # ------------------ Niveaux -------------------
+    path('niveaux/', views.NiveauListView.as_view(), name='niveau_list'),
+    path('niveaux/create/', views.NiveauCreateView.as_view(), name='niveau_create'),
+    path('niveaux/<int:pk>/update/', views.NiveauUpdateView.as_view(), name='niveau_update'),
+    path('niveaux/<int:pk>/delete/', views.NiveauDeleteView.as_view(), name='niveau_delete'),
     
-    # Gestion de l'évaluation (Création/Modification)
-    path('cours/<int:pk>/evaluer/', views.EvaluationManagementView.as_view(), name='evaluation_management'),
+    # ------------------ Années Académiques -------------------
+    path('annees/', views.AnneeAcademiqueListView.as_view(), name='anneeacademique_list'),
+    path('annees/create/', views.AnneeAcademiqueCreateView.as_view(), name='anneeacademique_create'),
+    path('annees/<int:pk>/update/', views.AnneeAcademiqueUpdateView.as_view(), name='anneeacademique_update'),
+    path('annees/<int:pk>/delete/', views.AnneeAcademiqueDeleteView.as_view(), name='anneeacademique_delete'),
+    
+    # ------------------ Cours Programmés -------------------
+    path('cours-programmes/', views.matiereprogrammee_list_view, name='matiereprogrammee_list'),
+    path('cours-programmes/create/', views.MatiereProgrammeeCreateView.as_view(), name='matiereprogrammee_create'),
+    path('cours-programmes/<int:pk>/update/', views.MatiereProgrammeeUpdateView.as_view(), name='matiereprogrammee_update'),
+    path('cours-programmes/<int:pk>/delete/', views.MatiereProgrammeeDeleteView.as_view(), name='matiereprogrammee_delete'),
+    
+    # ------------------ Évaluations -------------------
+    path('evaluations/', views.evaluation_list_view, name='evaluation_list'),
+    path('evaluations/<int:pk>/', views.EvaluationManagementView.as_view(), name='evaluation_manage'),
 ]

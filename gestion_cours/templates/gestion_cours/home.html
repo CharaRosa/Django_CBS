@@ -1,148 +1,439 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% load static %}
-{% load crispy_forms_tags %}
 
-{% block title %} Tableau de Bord Principal{% endblock title %}
+{% block title %}Tableau de bord - CBS Business School{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        transition: all 0.3s ease;
+        border-left: 4px solid #F59E0B;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(245, 158, 11, 0.2);
+    }
+
+    .action-btn {
+        transition: all 0.3s ease;
+        background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+    }
+
+    .action-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
+    }
+
+    .alert-item {
+        border-left: 3px solid #EF4444;
+        transition: all 0.2s ease;
+    }
+
+    .alert-item:hover {
+        background-color: #FEF2F2;
+    }
+
+    .activity-item {
+        border-left: 3px solid #10B981;
+        transition: all 0.2s ease;
+    }
+
+    .activity-item:hover {
+        background-color: #F0FDF4;
+    }
+
+    .chart-container {
+        position: relative;
+        height: 300px;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="space-y-8">
-    
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
-        <h1 class="text-3xl font-extrabold text-gray-900 mb-2 md:mb-0">
-            Tableau de Bord | Administration Pédagogique
-        </h1>
-        <div class="text-sm font-medium text-gray-600 bg-white p-2 rounded-lg shadow-sm">
-            Année Active : <span class="text-amber-700 font-semibold">{{ annee_active.annee_accademique|default:"N/A" }}</span>
-        </div>
-    </div>
-    
-    {% if messages %}
-        {% for message in messages %}
-            <div class="p-4 mb-4 text-sm 
-                {% if message.tags == 'error' %}text-red-700 bg-red-100 border border-red-400{% else %}text-green-700 bg-green-100 border border-green-400{% endif %} 
-                rounded-lg" role="alert">
-                {{ message }}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-5 fw-bold text-dark mb-2">
+                        <i class="fas fa-tachometer-alt text-warning me-2"></i>
+                        Tableau de bord administratif
+                    </h1>
+                    <p class="text-muted mb-0">
+                        <i class="far fa-calendar-alt me-2"></i>
+                        Année académique : 
+                        <strong>
+                            {# FIX: Utiliser le bon attribut et ajouter la vérification None #}
+                            {% if annee_active %}
+                                {{ annee_active.annee_accademique }}
+                            {% else %}
+                                Aucune année active
+                            {% endif %}
+                        </strong>
+                        <span class="mx-2">|</span>
+                        <i class="far fa-clock me-2"></i>
+                        Dernière mise à jour : <strong>{{ now|date:"d/m/Y H:i" }}</strong>
+                    </p>
+                </div>
+                <div>
+                    <button class="btn btn-outline-warning" onclick="location.reload()">
+                        <i class="fas fa-sync-alt me-2"></i>Actualiser
+                    </button>
+                </div>
             </div>
-        {% endfor %}
-    {% endif %}
-
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        </div>
+    </div>
+    
+    <div class="row g-4 mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card stat-card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-2 fw-semibold">Professeurs actifs</p>
+                            <h2 class="fw-bold text-dark mb-0">{{ stats.total_professeurs }}</h2>
+                            <small class="text-success">
+                                <i class="fas fa-arrow-up me-1"></i>{{ stats.nouveaux_professeurs }} nouveau(x) ce mois
+                            </small>
+                        </div>
+                        <div class="bg-warning bg-opacity-10 p-3 rounded-circle">
+                            <i class="fas fa-user-tie fa-2x text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         
-        <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-amber-600">
-            <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Heures Totales Enseignées</p>
-            <p class="text-4xl font-bold text-amber-700 mt-1">{{ heures_enseignees|floatformat:1|default:0 }}<span class="text-2xl font-semibold">h</span></p>
+        <div class="col-xl-3 col-md-6">
+            <div class="card stat-card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-2 fw-semibold">Cours programmés</p>
+                            <h2 class="fw-bold text-dark mb-0">{{ stats.total_cours }}</h2>
+                            <small class="text-info">
+                                <i class="fas fa-clock me-1"></i>{{ stats.heures_totales }}h prévues
+                            </small>
+                        </div>
+                        <div class="bg-primary bg-opacity-10 p-3 rounded-circle">
+                            <i class="fas fa-book-open fa-2x text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6">
+            <div class="card stat-card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-2 fw-semibold">Séances émargées</p>
+                            <h2 class="fw-bold text-dark mb-0">{{ stats.total_emargements }}</h2>
+                            <small class="text-warning">
+                                <i class="fas fa-percentage me-1"></i>{{ stats.taux_emargement }}% de taux
+                            </small>
+                        </div>
+                        <div class="bg-success bg-opacity-10 p-3 rounded-circle">
+                            <i class="fas fa-check-circle fa-2x text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-green-500">
-            <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Matières Enregistrées</p>
-            <p class="text-4xl font-bold text-green-700 mt-1">{{ matieres_actives }}</p>
+        <div class="col-xl-3 col-md-6">
+            <div class="card stat-card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-2 fw-semibold">Évaluations</p>
+                            <h2 class="fw-bold text-dark mb-0">{{ stats.total_evaluations }}</h2>
+                            <small class="text-danger">
+                                <i class="fas fa-exclamation-circle me-1"></i>{{ stats.evaluations_en_attente }} en
+                                attente
+                            </small>
+                        </div>
+                        <div class="bg-danger bg-opacity-10 p-3 rounded-circle">
+                            <i class="fas fa-star fa-2x text-danger"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        
-        <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-blue-500">
-            <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Professeurs Actifs</p>
-            <p class="text-4xl font-bold text-blue-700 mt-1">{{ professeurs_actifs }}</p>
-        </div>
-        
     </div>
 
-    <h2 class="text-2xl font-bold text-gray-800 mt-10 mb-4">Progression des Cours</h2>
-    
-    <div class="bg-white p-6 rounded-xl shadow-lg overflow-x-auto">
-        {% if cours_list %}
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Matière & Niveau</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Professeur</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Volume (H)</th>
-                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Progression</th>
-                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200">
-                {% for cours in cours_list %}
-                <tr class="hover:bg-gray-50">
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-semibold text-gray-900">{{ cours.matiere.libelle }}</div>
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
-                            {{ cours.niveau.libelle }} {{ cours.niveau.niv }} - {{ cours.filiere.code }} ({{ cours.semestre }})
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ cours.professeur.nom }} {{ cours.professeur.prenoms }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-medium">
-                        <span class="text-amber-600">{{ cours.total_heures_faites|floatformat:1|default:0 }}h</span> / {{ cours.nbr_heure|floatformat:1 }}h
-                        {% if cours.heures_restantes < 0 %}
-                            <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Dépassé</span>
-                        {% elif cours.heures_restantes == 0 and cours.progression_reelle >= 100 %}
-                            <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Terminé</span>
-                        {% endif %}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
-                        <div class="w-full bg-gray-200 rounded-full h-2.5">
-                            <div class="h-2.5 rounded-full 
-                                {% if cours.progression_reelle >= 100 %}bg-green-600{% elif cours.alerte_retard %}bg-red-600{% else %}bg-amber-600{% endif %}" 
-                                style="width: {{ cours.progression_reelle|floatformat:0 }}%">
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold mb-4">
+                        <i class="fas fa-bolt text-warning me-2"></i>Actions rapides
+                    </h5>
+                    <div class="row g-3">
+                        <div class="col-lg-3 col-md-6">
+                            <a href="{% url 'gestion_cours:professeur_create' %}" class="btn action-btn text-white w-100 py-3">
+                                <i class="fas fa-user-plus fa-lg mb-2 d-block"></i>
+                                <span class="fw-semibold">Nouveau professeur</span>
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <a href="{% url 'gestion_cours:matiereprogrammee_create' %}" class="btn action-btn text-white w-100 py-3">
+                                <i class="fas fa-calendar-plus fa-lg mb-2 d-block"></i>
+                                <span class="fw-semibold">Programmer cours</span>
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <a href="{% url 'gestion_cours:emargement_selection' %}"
+                                class="btn action-btn text-white w-100 py-3">
+                                <i class="fas fa-signature fa-lg mb-2 d-block"></i>
+                                <span class="fw-semibold">Émarger séance</span>
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <a href="{% url 'gestion_cours:evaluation_list' %}" class="btn action-btn text-white w-100 py-3">
+                                <i class="fas fa-star-half-alt fa-lg mb-2 d-block"></i>
+                                <span class="fw-semibold">Nouvelle évaluation</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold mb-4">
+                        <i class="fas fa-chart-bar text-warning me-2"></i>Distribution des cours par filière
+                    </h5>
+                    <div class="chart-container">
+                        <canvas id="coursParFiliereChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold mb-4">
+                        <i class="fas fa-bell text-danger me-2"></i>Alertes
+                        <span class="badge bg-danger rounded-pill float-end">{{ alertes|length }}</span>
+                    </h5>
+                    <div class="overflow-auto" style="max-height: 250px;">
+                        {% if alertes %}
+                        {% for alerte in alertes %}
+                        <div class="alert-item p-3 mb-2 bg-light rounded">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <p class="mb-1 fw-semibold text-dark">{{ alerte.titre }}</p>
+                                    <small class="text-muted">{{ alerte.description }}</small>
+                                </div>
+                                <span class="badge bg-{{ alerte.priorite }} ms-2">{{ alerte.type }}</span>
                             </div>
                         </div>
-                        <div class="mt-1 text-xs font-medium text-gray-600">
-                            {{ cours.progression_reelle|floatformat:0 }}%
-                            {% if cours.decalage and cours.decalage > 10 %}
-                                <span class="text-red-600 ml-1">(Retard: {{ cours.decalage|floatformat:0 }}%)</span>
-                            {% endif %}
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium space-x-2">
-                        
-                        <!-- Le lien qui causait l'erreur, maintenant supporté par urls.py -->
-                        <a href="{% url 'gestion_cours:historique_cours' cours.pk %}" class="text-blue-500 hover:text-blue-700 p-2 rounded-full hover:bg-blue-50" title="Voir l'historique des séances">
-                            <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        </a>
-                        
-                        <!-- Bouton Saisie Emargement -->
-                        <a href="{% url 'gestion_cours:emargement_saisir' cours.pk %}" class="text-amber-600 hover:text-amber-900 p-2 rounded-full hover:bg-amber-50" title="Émarger la séance">
-                            <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                        </a>
-                        
-                        <!-- Bouton Évaluation -->
-                       {% if cours.progression_reelle >= 100 %}
-                            <a href="{% url 'gestion_cours:evaluation_management' cours.pk %}" class="p-2 rounded-full 
-                                {% if cours.est_evalue %}text-green-600 hover:text-green-900 hover:bg-green-50{% else %}text-amber-600 hover:text-amber-900 hover:bg-amber-50{% endif %}" 
-                                title="{% if cours.est_evalue %}Modifier l'évaluation{% else %}Évaluer le cours{% endif %}">
-                                <svg class="w-5 h-5 inline" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M9.049 2.927c.3-.921 1.691-.921 1.99 0l3.007 9.256a1 1 0 01-.849 1.341l-7.234.001a1 1 0 01-.849-1.341l3.007-9.256z"></path></svg>
-                            </a>
-                
+                        {% endfor %}
                         {% else %}
-                            <span class="text-gray-400 p-2 rounded-full cursor-not-allowed" title="Évaluation disponible après 100% de progression">
-                                <svg class="w-5 h-5 inline" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path></svg>
-                            </span>
+                        <div class="text-center py-4">
+                            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                            <p class="text-muted">Aucune alerte pour le moment</p>
+                        </div>
                         {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <div class="p-4 bg-gray-50 border border-gray-200 rounded-lg text-gray-600">
-            Aucun cours n'est programmé pour l'année académique active.
+                    </div>
+                </div>
+            </div>
         </div>
-        {% endif %}
     </div>
 
-    <!-- Marge supérieure ajoutée pour compenser la suppression du titre h2 -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
-        <a href="{% url 'gestion_cours:professeur_list' %}" class="bg-amber-600 text-white p-4 rounded-lg shadow hover:bg-amber-700 text-center font-semibold transition duration-150">
-            Gérer les Professeurs
-        </a>
-        <a href="{% url 'gestion_cours:matiere_list' %}" class="bg-amber-600 text-white p-4 rounded-lg shadow hover:bg-amber-700 text-center font-semibold transition duration-150">
-            Gérer les Matières
-        </a>
-        <a href="{% url 'gestion_cours:historique' %}" class="bg-gray-600 text-white p-4 rounded-lg shadow hover:bg-gray-700 text-center font-semibold transition duration-150">
-            Voir l'Historique
-        </a>
-        <a href="{% url 'gestion_cours:emargement_selection_cours' %}" class="bg-amber-500 text-white p-4 rounded-lg shadow hover:bg-amber-600 text-center font-semibold transition duration-150">
-            Saisie Emargement AP
-        </a>
+    <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold mb-4">
+                        <i class="fas fa-chart-line text-success me-2"></i>Progression des émargements
+                    </h5>
+                    <div class="chart-container">
+                        <canvas id="progressionEmargementChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold mb-4">
+                        <i class="fas fa-trophy text-warning me-2"></i>Top 5 professeurs actifs
+                    </h5>
+                    <div class="chart-container">
+                        <canvas id="topProfesseursChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
+    <div class="row g-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold mb-4">
+                        <i class="fas fa-history text-info me-2"></i>Activités récentes
+                    </h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                    <th>Description</th>
+                                    <th>Utilisateur</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for activite in activites_recentes %}
+                                <tr>
+                                    <td>
+                                        <small class="text-muted">{{ activite.date|date:"d/m/Y" }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ activite.badge_class }}">{{ activite.type }}</span>
+                                    </td>
+                                    <td>{{ activite.description }}</td>
+                                    <td>
+                                        <i class="fas fa-user-circle text-muted me-1"></i>
+                                        {{ activite.utilisateur }}
+                                    </td>
+                                    <td>
+                                        {% if activite.lien %}
+                                        <a href="{{ activite.lien }}" class="btn btn-sm btn-outline-warning">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-4">
+                                        Aucune activité récente
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-{% endblock content %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    // Couleurs de marque
+    const brandColor = '#F59E0B';
+    const brandColorLight = 'rgba(245, 158, 11, 0.1)';
+    const brandColorBorder = 'rgba(245, 158, 11, 0.5)';
+
+    // Configuration commune des graphiques
+    const commonOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    usePointStyle: true,
+                    padding: 15
+                }
+            }
+        }
+    };
+
+    // Graphique: Distribution des cours par filière
+    const ctxFiliere = document.getElementById('coursParFiliereChart').getContext('2d');
+    new Chart(ctxFiliere, {
+        type: 'bar',
+        data: {
+            labels: {{ graphiques.filieres_labels | safe }},
+        datasets: [{
+            label: 'Nombre de cours',
+            data: {{ graphiques.filieres_data | safe }},
+        backgroundColor: brandColorLight,
+        borderColor: brandColor,
+        borderWidth: 2,
+        borderRadius: 8
+            }]
+        },
+        options: {
+        ...commonOptions,
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1
+                }
+            }
+        }
+    }
+    });
+
+    // Graphique: Progression des émargements
+    const ctxEmargement = document.getElementById('progressionEmargementChart').getContext('2d');
+    new Chart(ctxEmargement, {
+        type: 'line',
+        data: {
+            labels: {{ graphiques.emargement_labels | safe }},
+        datasets: [{
+            label: 'Émargements',
+            data: {{ graphiques.emargement_data | safe }},
+        borderColor: brandColor,
+        backgroundColor: brandColorLight,
+        tension: 0.4,
+        fill: true,
+        pointBackgroundColor: brandColor,
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+        pointRadius: 5
+            }]
+        },
+        options: {
+        ...commonOptions,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+    });
+
+    // Graphique: Top professeurs
+    const ctxProf = document.getElementById('topProfesseursChart').getContext('2d');
+    new Chart(ctxProf, {
+        type: 'doughnut',
+        data: {
+            labels: {{ graphiques.top_prof_labels | safe }},
+        datasets: [{
+            data: {{ graphiques.top_prof_data | safe }},
+        backgroundColor: [
+            'rgba(245, 158, 11, 0.8)',
+            'rgba(59, 130, 246, 0.8)',
+            'rgba(16, 185, 129, 0.8)',
+            'rgba(239, 68, 68, 0.8)',
+            'rgba(139, 92, 246, 0.8)'
+        ],
+        borderWidth: 0
+            }]
+        },
+        options: {
+        ...commonOptions,
+        cutout: '60%'
+    }
+    });
+</script>
+{% endblock %}

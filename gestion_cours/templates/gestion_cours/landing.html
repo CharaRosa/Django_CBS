@@ -1,43 +1,677 @@
-{% extends "base.html" %} 
-{% load static %}
-
-{% block title %}Accueil Public{% endblock title %}
-
-{% block content %}
-<div class="flex flex-col items-center justify-center min-h-[calc(100vh-150px)] text-center px-4">
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CBS Business School - Système de Gestion</title>
     
-    <div class="max-w-4xl mx-auto">
-        <h1 class="text-6xl font-extrabold text-gray-900 mb-4 tracking-tight">
-            Plateforme de <span class="text-indigo-600">Gestion Pédagogique</span>
-        </h1>
-        <p class="text-xl text-gray-600 mb-12">
-            Bienvenue sur l'interface de suivi et de gestion des cours pour l'établissement.
-        </p>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-            
-            <div class="bg-white p-6 rounded-xl shadow-lg border-b-4 border-indigo-500 transform hover:scale-[1.02] transition duration-300">
-                <p class="text-sm font-medium text-gray-500 uppercase">Professeurs</p>
-                <p class="text-5xl font-bold text-indigo-700 mt-2">{{ stats.total_professeurs }}</p>
-            </div>
-
-            <div class="bg-white p-6 rounded-xl shadow-lg border-b-4 border-yellow-500 transform hover:scale-[1.02] transition duration-300">
-                <p class="text-sm font-medium text-gray-500 uppercase">Matières</p>
-                <p class="text-5xl font-bold text-yellow-700 mt-2">{{ stats.total_matieres }}</p>
-            </div>
-            
-            <div class="bg-white p-6 rounded-xl shadow-lg border-b-4 border-green-500 transform hover:scale-[1.02] transition duration-300">
-                <p class="text-sm font-medium text-gray-500 uppercase">Heures Dispensées</p>
-                <p class="text-5xl font-bold text-green-700 mt-2">{{ stats.total_heures|floatformat:1 }}<span class="text-3xl font-semibold">h</span></p>
+    <!-- Bootstrap 5.3.3 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        :root {
+            --primary-color: #F59E0B;
+            --primary-dark: #D97706;
+            --secondary-color: #1E293B;
+            --light-bg: #FEF3C7;
+        }
+        
+        body {
+            overflow-x: hidden;
+        }
+        
+        /* Hero Section */
+        .hero-section {
+            background: linear-gradient(135deg, #1E293B 0%, #334155 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23F59E0B" fill-opacity="0.1" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,112C672,96,768,96,864,112C960,128,1056,160,1152,165.3C1248,171,1344,149,1392,138.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') no-repeat bottom;
+            background-size: cover;
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .hero-title {
+            font-size: 4rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 1.5rem;
+            animation: fadeInUp 1s ease-out;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.5rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 2rem;
+            animation: fadeInUp 1s ease-out 0.2s both;
+        }
+        
+        .btn-primary-custom {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            animation: fadeInUp 1s ease-out 0.4s both;
+        }
+        
+        .btn-primary-custom:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(245, 158, 11, 0.4);
+        }
+        
+        /* Statistiques */
+        .stats-section {
+            margin-top: -80px;
+            position: relative;
+            z-index: 3;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border-bottom: 4px solid var(--primary-color);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 50px rgba(245, 158, 11, 0.2);
+        }
+        
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--primary-color);
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            font-size: 1rem;
+            color: #64748B;
+            font-weight: 500;
+        }
+        
+        .stat-icon {
+            font-size: 3rem;
+            color: var(--primary-color);
+            opacity: 0.2;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+        
+        /* Section graphiques */
+        .charts-section {
+            background: #F8FAFC;
+            padding: 80px 0;
+        }
+        
+        .chart-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
+            margin-bottom: 2rem;
+            height: 100%;
+        }
+        
+        .chart-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--secondary-color);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .chart-title i {
+            color: var(--primary-color);
+            margin-right: 10px;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 350px;
+        }
+        
+        /* Features Section */
+        .features-section {
+            padding: 80px 0;
+        }
+        
+        .feature-card {
+            text-align: center;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2rem;
+            color: white;
+        }
+        
+        .feature-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--secondary-color);
+            margin-bottom: 1rem;
+        }
+        
+        .feature-description {
+            color: #64748B;
+            line-height: 1.6;
+        }
+        
+        /* Footer */
+        .footer {
+            background: var(--secondary-color);
+            color: white;
+            padding: 40px 0 20px;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            .hero-subtitle {
+                font-size: 1.2rem;
+            }
+            .stat-number {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Section Hero -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 hero-content">
+                    <h1 class="hero-title">
+                        CBS<br>
+                        <span style="color: var(--primary-color);">Business School</span>
+                    </h1>
+                    <p class="hero-subtitle">
+                        Plateforme moderne de gestion académique pour l'excellence éducative
+                    </p>
+                    <a href="{% url 'login' %}" class="btn btn-primary-custom btn-lg">
+                        <i class="fas fa-sign-in-alt me-2"></i>Accéder au système
+                    </a>
+                </div>
+                <div class="col-lg-6 text-center d-none d-lg-block">
+                    <div style="font-size: 20rem; color: rgba(255,255,255,0.1);">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                </div>
             </div>
         </div>
-        {% if not user.is_authenticated %}
-            <a href="{% url 'login' %}" class="inline-flex items-center px-8 py-3 border border-transparent text-lg font-medium rounded-full shadow-xl text-white bg-red-600 hover:bg-red-700 transition duration-300">
-                Accès au Tableau de Bord AP <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
-            </a>
-        {% endif %}
-        
-    </div>
+    </section>
 
-</div>
-{% endblock content %}
+    <!-- Statistiques principales -->
+    <section class="stats-section">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-3 col-md-6">
+                    <div class="stat-card position-relative">
+                        <i class="fas fa-users stat-icon"></i>
+                        <div class="stat-number" data-count="{{ stats.total_professeurs }}">0</div>
+                        <div class="stat-label">Professeurs</div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="stat-card position-relative">
+                        <i class="fas fa-book-open stat-icon"></i>
+                        <div class="stat-number" data-count="{{ stats.total_cours }}">0</div>
+                        <div class="stat-label">Cours programmés</div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="stat-card position-relative">
+                        <i class="fas fa-clock stat-icon"></i>
+                        <div class="stat-number" data-count="{{ stats.heures_totales }}">0</div>
+                        <div class="stat-label">Heures de formation</div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="stat-card position-relative">
+                        <i class="fas fa-check-circle stat-icon"></i>
+                        <div class="stat-number" data-count="{{ stats.total_emargements }}">0</div>
+                        <div class="stat-label">Séances réalisées</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section graphiques -->
+    <section class="charts-section">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="display-5 fw-bold">Aperçu des activités</h2>
+                <p class="text-muted">Statistiques en temps réel de notre institution</p>
+            </div>
+            
+            <div class="row g-4">
+                <!-- Répartition par filière -->
+                <div class="col-lg-6">
+                    <div class="chart-card">
+                        <h3 class="chart-title">
+                            <i class="fas fa-chart-pie"></i>
+                            Répartition des cours par filière
+                        </h3>
+                        <div class="chart-container">
+                            <canvas id="filiereChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Répartition par niveau -->
+                <div class="col-lg-6">
+                    <div class="chart-card">
+                        <h3 class="chart-title">
+                            <i class="fas fa-layer-group"></i>
+                            Distribution par niveau
+                        </h3>
+                        <div class="chart-container">
+                            <canvas id="niveauChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Évolution des émargements -->
+                <div class="col-lg-8">
+                    <div class="chart-card">
+                        <h3 class="chart-title">
+                            <i class="fas fa-chart-line"></i>
+                            Évolution des émargements (6 derniers mois)
+                        </h3>
+                        <div class="chart-container">
+                            <canvas id="emargementChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistiques mensuelles -->
+                <div class="col-lg-4">
+                    <div class="chart-card">
+                        <h3 class="chart-title">
+                            <i class="fas fa-calendar-check"></i>
+                            Ce mois-ci
+                        </h3>
+                        <div class="d-flex flex-column gap-3 mt-4">
+                            <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                                <div>
+                                    <div class="text-muted small">Nouveaux cours</div>
+                                    <div class="h4 fw-bold mb-0">{{ stats.cours_ce_mois }}</div>
+                                </div>
+                                <i class="fas fa-plus-circle fa-2x text-primary"></i>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                                <div>
+                                    <div class="text-muted small">Émargements</div>
+                                    <div class="h4 fw-bold mb-0">{{ stats.emargements_ce_mois }}</div>
+                                </div>
+                                <i class="fas fa-signature fa-2x text-success"></i>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                                <div>
+                                    <div class="text-muted small">Évaluations</div>
+                                    <div class="h4 fw-bold mb-0">{{ stats.evaluations_ce_mois }}</div>
+                                </div>
+                                <i class="fas fa-star fa-2x text-warning"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Taux de complétion -->
+                <div class="col-lg-12">
+                    <div class="chart-card">
+                        <h3 class="chart-title">
+                            <i class="fas fa-tasks"></i>
+                            Taux de complétion des cours par filière
+                        </h3>
+                        <div class="chart-container">
+                            <canvas id="completionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section fonctionnalités -->
+    <section class="features-section">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="display-5 fw-bold">Fonctionnalités clés</h2>
+                <p class="text-muted">Un système complet pour la gestion académique</p>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+                        <h3 class="feature-title">Gestion des professeurs</h3>
+                        <p class="feature-description">
+                            Administration complète des professeurs : profils, qualifications, affectations et historiques.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <h3 class="feature-title">Programmation de cours</h3>
+                        <p class="feature-description">
+                            Planification flexible des cours avec gestion des horaires, salles et ressources.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-signature"></i>
+                        </div>
+                        <h3 class="feature-title">Émargement numérique</h3>
+                        <p class="feature-description">
+                            Système d'émargement digital pour un suivi précis de la présence et des heures.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <h3 class="feature-title">Évaluations</h3>
+                        <p class="feature-description">
+                            Gestion des évaluations et notation avec analyses statistiques approfondies.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <h3 class="feature-title">Rapports & Analytics</h3>
+                        <p class="feature-description">
+                            Tableaux de bord interactifs et exports détaillés en Excel et PDF.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-filter"></i>
+                        </div>
+                        <h3 class="feature-title">Filtrage avancé</h3>
+                        <p class="feature-description">
+                            Recherche et filtrage puissants pour accéder rapidement aux informations.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+                    <h4 class="fw-bold mb-2">CBS Business School</h4>
+                    <p class="text-white-50 mb-0">Excellence académique et innovation</p>
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <p class="text-white-50 mb-0">
+                        &copy; {{ current_year }} CBS Business School. Tous droits réservés.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <script>
+        // Animation des compteurs
+        document.addEventListener('DOMContentLoaded', function() {
+            const counters = document.querySelectorAll('.stat-number');
+            
+            counters.forEach(counter => {
+                const target = parseInt(counter.getAttribute('data-count'));
+                const duration = 2000;
+                const step = target / (duration / 16);
+                let current = 0;
+                
+                const timer = setInterval(() => {
+                    current += step;
+                    if (current >= target) {
+                        counter.textContent = target.toLocaleString('fr-FR');
+                        clearInterval(timer);
+                    } else {
+                        counter.textContent = Math.floor(current).toLocaleString('fr-FR');
+                    }
+                }, 16);
+            });
+        });
+
+        // Configuration des couleurs
+        const colors = {
+            primary: '#F59E0B',
+            primaryLight: 'rgba(245, 158, 11, 0.1)',
+            secondary: '#3B82F6',
+            success: '#10B981',
+            danger: '#EF4444',
+            warning: '#F59E0B',
+            info: '#06B6D4'
+        };
+
+        const colorPalette = [
+            'rgba(245, 158, 11, 0.8)',
+            'rgba(59, 130, 246, 0.8)',
+            'rgba(16, 185, 129, 0.8)',
+            'rgba(239, 68, 68, 0.8)',
+            'rgba(139, 92, 246, 0.8)',
+            'rgba(236, 72, 153, 0.8)'
+        ];
+
+        // Options communes
+        const commonOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 15,
+                        font: {
+                            size: 12,
+                            family: 'Poppins'
+                        }
+                    }
+                }
+            }
+        };
+
+        // Graphique filières (Pie)
+        new Chart(document.getElementById('filiereChart'), {
+            type: 'pie',
+            data: {
+                labels: {{ graphiques.filieres_labels|safe }},
+                datasets: [{
+                    data: {{ graphiques.filieres_data|safe }},
+                    backgroundColor: colorPalette,
+                    borderWidth: 0
+                }]
+            },
+            options: commonOptions
+        });
+
+        // Graphique niveaux (Doughnut)
+        new Chart(document.getElementById('niveauChart'), {
+            type: 'doughnut',
+            data: {
+                labels: {{ graphiques.niveaux_labels|safe }},
+                datasets: [{
+                    data: {{ graphiques.niveaux_data|safe }},
+                    backgroundColor: colorPalette,
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                ...commonOptions,
+                cutout: '65%'
+            }
+        });
+
+        // Graphique émargements (Line)
+        new Chart(document.getElementById('emargementChart'), {
+            type: 'line',
+            data: {
+                labels: {{ graphiques.emargement_labels|safe }},
+                datasets: [{
+                    label: 'Émargements',
+                    data: {{ graphiques.emargement_data|safe }},
+                    borderColor: colors.primary,
+                    backgroundColor: colors.primaryLight,
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: colors.primary,
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                }]
+            },
+            options: {
+                ...commonOptions,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            font: {
+                                family: 'Poppins'
+                            }
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            font: {
+                                family: 'Poppins'
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Graphique complétion (Bar horizontal)
+        new Chart(document.getElementById('completionChart'), {
+            type: 'bar',
+            data: {
+                labels: {{ graphiques.completion_labels|safe }},
+                datasets: [{
+                    label: 'Taux de complétion (%)',
+                    data: {{ graphiques.completion_data|safe }},
+                    backgroundColor: colors.primary,
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                ...commonOptions,
+                indexAxis: 'y',
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            },
+                            font: {
+                                family: 'Poppins'
+                            }
+                        }
+                    },
+                    y: {
+                        ticks: {
+                            font: {
+                                family: 'Poppins'
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
