@@ -15,6 +15,7 @@ from datetime import date, timedelta
 from decimal import Decimal
 import json 
 
+
 # Import des modèles
 from .models import (
     Professeur, Filiere, Niveau, Matiere, 
@@ -48,6 +49,25 @@ from .export_utils_complete import (
     export_emargements_to_excel, export_emargements_to_pdf,
     export_evaluations_to_excel, export_evaluations_to_pdf
 )
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
+def paginate_queryset(request, queryset, items_per_page=10):
+    """
+    Helper function for pagination
+    Usage: page_obj = paginate_queryset(request, queryset, 10)
+    """
+    paginator = Paginator(queryset, items_per_page)
+    page = request.GET.get('page', 1)
+    
+    try:
+        page_obj = paginator.page(page)
+    except PageNotAnInteger:
+        page_obj = paginator.page(1)
+    except EmptyPage:
+        page_obj = paginator.page(paginator.num_pages)
+    
+    return page_obj
+
 
 
 # ==============================================================================
@@ -924,6 +944,7 @@ class MatiereListView(BaseAPView, ListView):
     template_name = 'gestion_cours/matiere_list.html'
     context_object_name = 'object_list'
     ordering = ['libelle']
+    paginate_by = 10
 
 
 class MatiereCreateView(BaseAPView, CreateView):
@@ -967,6 +988,7 @@ class FiliereListView(BaseAPView, ListView):
     template_name = 'gestion_cours/filiere_list.html'
     context_object_name = 'object_list'
     ordering = ['libelle']
+    paginate_by = 10
 
 
 class FiliereCreateView(BaseAPView, CreateView):
@@ -1015,6 +1037,7 @@ class NiveauListView(BaseAPView, ListView):
     template_name = 'gestion_cours/niveau_list.html'
     context_object_name = 'object_list'
     ordering = ['filiere', 'niv']
+    paginate_by = 10
 
 
 class NiveauCreateView(BaseAPView, CreateView):
@@ -1063,6 +1086,7 @@ class AnneeAcademiqueListView(BaseAPView, ListView):
     template_name = 'gestion_cours/anneeacademique_list.html'
     context_object_name = 'object_list'
     ordering = ['-annee_accademique']
+    paginate_by = 10
 
 
 class AnneeAcademiqueCreateView(BaseAPView, CreateView):
@@ -1135,6 +1159,7 @@ class EmargementSelectionCoursView(BaseAPView, ListView):
     model = MatiereProgrammee
     template_name = 'gestion_cours/emargement_selection_cours.html'
     context_object_name = 'cours_list'
+    paginate_by = 10
     
     def get_queryset(self):
         annee_active = get_active_annee_academique()

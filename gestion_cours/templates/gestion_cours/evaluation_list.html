@@ -1,86 +1,101 @@
 {% extends "base.html" %}
+{% load static %}
 
-{% block title %}Liste des Évaluations{% endblock title %}
+{% block title %}Liste des Évaluations{% endblock %}
 
 {% block content %}
-<h1 class="text-3xl font-extrabold text-gray-900 mb-6 border-b pb-3">Liste des Évaluations Qualitatives</h1>
-
-<div class="mb-4 flex justify-end space-x-2">
-    <a href="?{% for key, value in request.GET.items %}{% if key != 'export' %}{{ key }}={{ value }}&{% endif %}{% endfor %}export=excel" 
-       class="flex items-center text-sm font-medium text-white bg-green-600 hover:bg-green-700 py-2 px-4 rounded-lg transition duration-150 shadow-md">
-        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-        Export Excel
-    </a>
-    <a href="?{% for key, value in request.GET.items %}{% if key != 'export' %}{{ key }}={{ value }}&{% endif %}{% endfor %}export=pdf" 
-       class="flex items-center text-sm font-medium text-white bg-red-600 hover:bg-red-700 py-2 px-4 rounded-lg transition duration-150 shadow-md">
-        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
-        Export PDF
-    </a>
+<!-- En-tête de page -->
+<div class="page-header">
+    <h1 class="page-title">
+        <i class="fas fa-clipboard-list"></i>
+        Évaluations Qualitatives
+    </h1>
+    <div class="page-actions">
+        <div class="export-buttons">
+            <a href="?{% for key, value in request.GET.items %}{% if key != 'export' %}{{ key }}={{ value }}&{% endif %}{% endfor %}export=excel" 
+               class="btn-export btn-export-excel">
+                <i class="fas fa-file-excel me-2"></i>Excel
+            </a>
+            <a href="?{% for key, value in request.GET.items %}{% if key != 'export' %}{{ key }}={{ value }}&{% endif %}{% endfor %}export=pdf" 
+               class="btn-export btn-export-pdf">
+                <i class="fas fa-file-pdf me-2"></i>PDF
+            </a>
+        </div>
+    </div>
 </div>
 
-<!-- ZONE DE FILTRES -->
-<div class="bg-white p-6 rounded-xl shadow-lg mb-6 border border-gray-200">
-    <h2 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">
-        <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+<!-- Messages -->
+{% if messages %}
+    {% include 'gestion_cours/includes/messages.html' %}
+{% endif %}
+
+<!-- Filtres -->
+<div class="filter-card">
+    <div class="filter-header">
+        <i class="fas fa-filter"></i>
         Filtrer les Évaluations
-    </h2>
-    <form method="get" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+    </div>
+    
+    <form method="get" class="filter-form">
         {% for field in filter.form %}
-        <div>
-            <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
-                {{ field.label }}
-            </label>
+        <div class="filter-group">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
             {{ field }}
         </div>
         {% endfor %}
-        <div class="flex items-end space-x-2">
-            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-150 flex-1">
-                <svg class="w-5 h-5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                Filtrer
+        
+        <div class="filter-actions">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-search me-2"></i>Filtrer
             </button>
-            <a href="{% url 'gestion_cours:evaluation_list' %}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition duration-150">
-                Réinitialiser
+            <a href="{% url 'gestion_cours:evaluation_list' %}" class="btn btn-secondary">
+                <i class="fas fa-redo me-2"></i>Réinitialiser
             </a>
         </div>
     </form>
 </div>
 
-{% if evaluations %}
-<div class="overflow-x-auto shadow-lg sm:rounded-lg">
-    <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-            <tr>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Matière</th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Professeur</th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Filière/Niveau</th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Semestre</th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Évalué par</th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Résumé de l'Évaluation</th>
-            </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-            {% for eval in evaluations %}
-            <tr class="hover:bg-gray-50">
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ eval.matiere_programmer.matiere.libelle }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ eval.matiere_programmer.professeur }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ eval.matiere_programmer.filiere.code }} - {{ eval.matiere_programmer.niveau.niv }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ eval.matiere_programmer.get_semestre_display }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ eval.utilisateur_evaluation.username|default:"N/A" }}</td>
-                <td class="px-6 py-4 text-sm text-gray-700">
-                    {{ eval.resume_evaluation|truncatewords:15 }}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<!-- Tableau -->
+<div class="table-card">
+    <div class="table-wrapper">
+        {% if evaluations %}
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Matière</th>
+                    <th>Professeur</th>
+                    <th>Filière/Niveau</th>
+                    <th>Semestre</th>
+                    <th>Évalué par</th>
+                    <th>Résumé</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for eval in evaluations %}
+                <tr>
+                    <td>{{ eval.matiere_programmer.matiere.libelle }}</td>
+                    <td>{{ eval.matiere_programmer.professeur }}</td>
+                    <td>{{ eval.matiere_programmer.filiere.code }} - {{ eval.matiere_programmer.niveau.niv }}</td>
+                    <td>{{ eval.matiere_programmer.get_semestre_display }}</td>
+                    <td>{{ eval.utilisateur_evaluation.username|default:"N/A" }}</td>
+                    <td class="col-description">{{ eval.resume_evaluation|truncatewords:15 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <!-- État vide -->
+        <div class="empty-state">
+            <i class="fas fa-clipboard-check empty-state-icon"></i>
+            <h3 class="empty-state-title">Aucune évaluation trouvée</h3>
+            <p class="empty-state-text">Les évaluations apparaîtront ici une fois créées</p>
+        </div>
+        {% endif %}
+    </div>
 </div>
-{% else %}
-<div class="text-center py-12 bg-white rounded-xl shadow">
-    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-    </svg>
-    <h3 class="mt-2 text-sm font-medium text-gray-900">Aucune évaluation trouvée</h3>
-    <p class="mt-1 text-sm text-gray-500">Les évaluations apparaîtront ici une fois qu'elles seront créées.</p>
-</div>
+
+<!-- Pagination -->
+{% if is_paginated %}
+    {% include 'gestion_cours/includes/pagination.html' %}
 {% endif %}
 {% endblock content %}

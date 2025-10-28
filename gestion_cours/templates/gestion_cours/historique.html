@@ -1,48 +1,58 @@
 {% extends "base.html" %}
+{% load static %}
 
-{% block title %}Historique des Émargements{% endblock %}
+{% block title %}Historique Récent{% endblock %}
 
 {% block content %}
-<h1 class="text-3xl font-extrabold text-indigo-700 mb-6">Historique Récent des Émargements</h1>
-<p class="text-gray-600 mb-6">Les 50 dernières séances enregistrées.</p>
+<!-- En-tête de page -->
+<div class="page-header">
+    <h1 class="page-title">
+        <i class="fas fa-clock"></i>
+        Historique Récent des Émargements
+    </h1>
+</div>
 
-{% if historique %}
-<div class="bg-white p-6 rounded-xl shadow-lg overflow-x-auto">
-    <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-indigo-600">
-            <tr>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Date</th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Matière</th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Professeur</th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Durée (H)</th>
-            </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-            {% for emargement in historique %}
-            <tr class="hover:bg-indigo-50 transition duration-150">
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {{ emargement.date_emar|date:"d M Y" }}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                    {{ emargement.matiere_programmer.matiere.libelle }}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                    {{ emargement.matiere_programmer.professeur }}
-                </td>
-                {# Affiche la durée enregistrée dans le champ heure_eff #}
-                <td class="px-6 py-4 whitespace-nowrap text-sm">
-                    <span class="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        {{ emargement.heure_eff }}
-                    </span>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<div class="alert alert-info">
+    <div class="alert-icon">
+        <i class="fas fa-info-circle"></i>
+    </div>
+    <span>Les 50 dernières séances enregistrées</span>
 </div>
-{% else %}
-<div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 rounded-md" role="alert">
-    <p>Aucun émargement n'a encore été enregistré.</p>
+
+<!-- Tableau -->
+<div class="table-card">
+    <div class="table-wrapper">
+        {% if historique %}
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Matière</th>
+                    <th>Professeur</th>
+                    <th class="text-center">Durée</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for emargement in historique %}
+                <tr>
+                    <td>{{ emargement.date_emar|date:"d M Y" }}</td>
+                    <td>{{ emargement.matiere_programmer.matiere.libelle }}</td>
+                    <td>{{ emargement.matiere_programmer.professeur }}</td>
+                    <td class="text-center col-number">
+                        <span class="badge badge-success">{{ emargement.heure_eff }}h</span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <!-- État vide -->
+        <div class="empty-state">
+            <i class="fas fa-calendar-times empty-state-icon"></i>
+            <h3 class="empty-state-title">Aucun émargement enregistré</h3>
+            <p class="empty-state-text">Les émargements apparaîtront ici</p>
+        </div>
+        {% endif %}
+    </div>
 </div>
-{% endif %}
 {% endblock content %}

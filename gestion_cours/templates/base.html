@@ -6,246 +6,207 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CBS Gestion Cours - {% block title %}Tableau de Bord{% endblock title %}</title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Bootstrap 5.3.3 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="{% static 'css/forms.css' %}">      <!-- NOUVEAU -->
+    <link rel="stylesheet" href="{% static 'css/tables.css' %}">     <!-- NOUVEAU -->
     
-    <style>
-        /* Configuration de la police Inter */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        
-        /* Styles pour l'Ambre (Amber) */
-        .text-cbs-primary { color: #f59e0b; } /* amber-500 */
-        .hover\:text-cbs-dark:hover { color: #d97706; } /* amber-700 */
-        .bg-cbs-light { background-color: #fffbeb; } /* amber-50 */
-        
-        /* NOUVEAU: Styles pour changer le focus des éléments de formulaire Bootstrap 5 en Ambre */
-        .form-control:focus, .form-select:focus, .form-check-input:focus {
-            border-color: #f59e0b !important; /* amber-500 */
-            box-shadow: 0 0 0 0.25rem rgba(245, 158, 11, 0.25) !important; /* Amber avec opacité */
-        }
-        
-        /* Cache la barre latérale sur mobile par défaut */
-        #sidebar {
-            transition: transform 0.3s ease-in-out;
-            transform: translateX(-100%);
-        }
-        /* Affiche la barre latérale sur grand écran */
-        @media (min-width: 768px) {
-            #sidebar {
-                transform: translateX(0);
-                /* Retirer fixed sur desktop et forcer le positionnement relatif */
-                position: relative; 
-                height: auto; 
-            }
-        }
-        /* Superposition sombre pour le mobile */
-        .sidebar-overlay {
-            visibility: hidden;
-            opacity: 0;
-            transition: visibility 0s, opacity 0.3s;
-        }
-        .sidebar-overlay.active {
-            visibility: visible;
-            opacity: 1;
-        }
-        /* Ajout d'une classe pour l'état actif du menu sur mobile */
-        #sidebar.is-active {
-            transform: translateX(0%);
-            /* Garder fixed sur mobile pour l'effet slide-in */
-            position: fixed; 
-            height: 100%; 
-        }
-    </style>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/animations.css' %}">
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+    
+    {% block extra_css %}{% endblock %}
 </head>
-<body class="bg-gray-50 min-h-screen flex flex-col">
-
-    <header class="bg-white shadow-md sticky top-0 z-40">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center">
-            
-            <div class="flex items-center space-x-4">
-                 <button id="menu-btn-header" class="text-gray-600 md:hidden p-2 rounded-lg hover:bg-gray-100 focus:outline-none">
-                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
-                 </button>
-                 <a href="{% url 'gestion_cours:landing' %}" class="flex items-center hidden md:block">
-                    <p class="text-xl font-bold text-gray-900">CBS - GESTION COURS</p>
-                 </a>
+<body>
+    <script src="{% static 'js/sidebar.js' %}"></script>
+    <script src="{% static 'js/forms.js' %}"></script>      <!-- NOUVEAU -->
+    <script src="{% static 'js/tables.js' %}"></script>     <!-- NOUVEAU -->
+    <div class="layout-wrapper">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <button id="menu-toggle" class="menu-toggle" aria-label="Toggle menu">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+                <a href="{% url 'gestion_cours:landing' %}" class="header-logo">
+                    CBS GESTION COURS
+                </a>
             </div>
-
-            <div class="flex items-center space-x-4">
+            
+            <div class="header-right">
                 {% if user.is_authenticated %}
-                    <span class="text-sm font-medium text-gray-600 hidden sm:inline">
-                        Connecté: <span class="text-amber-700 font-semibold">{{ user.username }}</span>
-                    </span>
-                    <form method="post" action="{% url 'logout' %}" class="inline">
+                    <div class="user-info">
+                        <div class="user-avatar">
+                            {{ user.username|first|upper }}
+                        </div>
+                        <span class="user-name">{{ user.username }}</span>
+                    </div>
+                    <form method="post" action="{% url 'logout' %}" class="d-inline">
                         {% csrf_token %}
-                        <button type="submit" class="text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 py-2 px-4 rounded-lg transition duration-150 shadow-md">
+                        <button type="submit" class="btn-logout">
+                            <i class="fas fa-sign-out-alt me-1"></i>
                             Déconnexion
                         </button>
                     </form>
                 {% else %}
-                    <a href="{% url 'login' %}" class="text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 py-2 px-4 rounded-lg transition duration-150 shadow-md">
+                    <a href="{% url 'login' %}" class="btn-logout">
+                        <i class="fas fa-sign-in-alt me-1"></i>
                         Connexion
                     </a>
                 {% endif %}
             </div>
-        </div>
-    </header>
-    
-    <div class="flex flex-1 h-screen overflow-hidden"> 
+        </header>
 
-        <div id="sidebar-overlay" class="sidebar-overlay fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden" onclick="toggleSidebar()"></div>
-
-        <nav id="sidebar" class="fixed inset-y-0 left-0 w-64 bg-white shadow-xl z-40 md:relative md:shadow-none flex flex-col flex-shrink-0 h-full">
-            
-            <div class="px-6 py-4 border-b border-gray-100 mb-4">
-                <a href="{% url 'gestion_cours:landing' %}" class="flex items-center justify-center">
-                    <img src="{% static 'img/logo.jpg' %}" alt="CEFOD CBS Business School Logo" class="h-10 w-auto">
+        <!-- Sidebar -->
+        <nav class="app-sidebar">
+            <div class="sidebar-logo">
+                <a href="{% url 'gestion_cours:landing' %}">
+                    <img src="{% static 'img/logo.jpg' %}" alt="CBS Logo">
                 </a>
             </div>
-            
-            <div class="px-6 mb-4 md:hidden">
-                 {% if user.is_authenticated %}
-                    <p class="text-sm font-medium text-gray-600">Connecté: <span class="text-cbs-primary">{{ user.username }}</span></p>
-                {% endif %}
-            </div>
 
-            <div class="flex-1 space-y-2 px-4 overflow-y-auto">
-                
-                <a href="{% url 'gestion_cours:home' %}" class="flex items-center p-3 rounded-lg text-gray-700 hover:bg-cbs-light hover:text-cbs-primary transition duration-150 ease-in-out">
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-8v8m-4-8v8M4 16h16"></path></svg>
-                    Tableau de bord
-                </a>
-
-                <div class="pt-4 border-t border-gray-100">
-                    <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Configuration & Gestion</p>
-                    
-                    <a href="{% url 'gestion_cours:anneeacademique_list' %}"class="flex items-center p-3 rounded-lg text-gray-700 hover:bg-cbs-light hover:text-cbs-primary transition duration-150 ease-in-out">
-                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                        Années Académiques
-                    </a>
-
-                    <a href="{% url 'gestion_cours:filiere_list' %}" class="flex items-center p-3 rounded-lg text-gray-700 hover:bg-cbs-light hover:text-cbs-primary transition duration-150 ease-in-out">
-                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
-                        Filières
-                    </a>
-                    
-                    <a href="{% url 'gestion_cours:niveau_list' %}" class="flex items-center p-3 rounded-lg text-gray-700 hover:bg-cbs-light hover:text-cbs-primary transition duration-150 ease-in-out">
-                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2v8m0-8a2 2 0 100-4 2 2 0 000 4zm0 8a2 2 0 100 4 2 2 0 000-4z"></path></svg>
-                        Niveaux
-                    </a>
-                    
-                    <a href="{% url 'gestion_cours:matiere_list' %}" class="flex items-center p-3 rounded-lg text-gray-700 hover:bg-cbs-light hover:text-cbs-primary transition duration-150 ease-in-out">
-                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.466 9.563 5 8 5c-4 0-4 4-4 8 0 1.06.148 2.062.453 3H4a2 2 0 00-2 2v1a2 2 0 002 2h16a2 2 0 002-2v-1a2 2 0 00-2-2h-.453c.305-.938.453-1.94.453-3 0-4-4-8-8-8z"></path></svg>
-                        Matières
-                    </a>
-                    
-                    <a href="{% url 'gestion_cours:professeur_list' %}" class="flex items-center p-3 rounded-lg text-gray-700 hover:bg-cbs-light hover:text-cbs-primary transition duration-150 ease-in-out">
-                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                        Professeurs
-                    </a>
-
-                    <a href="{% url 'gestion_cours:matiereprogrammee_list' %}" class="flex items-center p-3 rounded-lg text-gray-700 hover:bg-cbs-light hover:text-cbs-primary transition duration-150 ease-in-out">
-                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                        Matières Programmées
-                    </a>
-                    
+            <div class="sidebar-nav">
+                <!-- Dashboard -->
+                <div class="nav-section">
+                    <div class="nav-item">
+                        <a href="{% url 'gestion_cours:home' %}" class="nav-link">
+                            <span class="nav-link-icon">
+                                <i class="fas fa-th-large"></i>
+                            </span>
+                            <span class="nav-link-text">Tableau de bord</span>
+                        </a>
+                    </div>
                 </div>
-                
-                <div class="pt-4 border-t border-gray-100">
-                    <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Opérations</p>
 
-                    <a href="{% url 'gestion_cours:emargement_selection' %}" class="flex items-center p-3 rounded-lg text-gray-700 hover:bg-cbs-light hover:text-cbs-primary transition duration-150 ease-in-out">
-                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                        Émargement
-                    </a>
-
-                    <a href="{% url 'gestion_cours:evaluation_list' %}" class="flex items-center p-3 rounded-lg text-gray-700 hover:bg-cbs-light hover:text-cbs-primary transition duration-150 ease-in-out">
-                         <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-4m0-4l3-3m0 0l3 3m-3-3v8m0 0l3 3m-3-3l-3 3"></path></svg>
-                        Évaluations
-                    </a>
+                <!-- Configuration -->
+                <div class="nav-section">
+                    <div class="nav-section-title">Configuration & Gestion</div>
                     
+                    <div class="nav-item">
+                        <a href="{% url 'gestion_cours:anneeacademique_list' %}" class="nav-link">
+                            <span class="nav-link-icon">
+                                <i class="fas fa-calendar-alt"></i>
+                            </span>
+                            <span class="nav-link-text">Années Académiques</span>
+                        </a>
+                    </div>
+
+                    <div class="nav-item">
+                        <a href="{% url 'gestion_cours:filiere_list' %}" class="nav-link">
+                            <span class="nav-link-icon">
+                                <i class="fas fa-stream"></i>
+                            </span>
+                            <span class="nav-link-text">Filières</span>
+                        </a>
+                    </div>
+
+                    <div class="nav-item">
+                        <a href="{% url 'gestion_cours:niveau_list' %}" class="nav-link">
+                            <span class="nav-link-icon">
+                                <i class="fas fa-layer-group"></i>
+                            </span>
+                            <span class="nav-link-text">Niveaux</span>
+                        </a>
+                    </div>
+
+                    <div class="nav-item">
+                        <a href="{% url 'gestion_cours:matiere_list' %}" class="nav-link">
+                            <span class="nav-link-icon">
+                                <i class="fas fa-book"></i>
+                            </span>
+                            <span class="nav-link-text">Matières</span>
+                        </a>
+                    </div>
+
+                    <div class="nav-item">
+                        <a href="{% url 'gestion_cours:professeur_list' %}" class="nav-link">
+                            <span class="nav-link-icon">
+                                <i class="fas fa-chalkboard-teacher"></i>
+                            </span>
+                            <span class="nav-link-text">Professeurs</span>
+                        </a>
+                    </div>
+
+                    <div class="nav-item">
+                        <a href="{% url 'gestion_cours:matiereprogrammee_list' %}" class="nav-link">
+                            <span class="nav-link-icon">
+                                <i class="fas fa-clipboard-list"></i>
+                            </span>
+                            <span class="nav-link-text">Cours Programmés</span>
+                        </a>
+                    </div>
                 </div>
-                
-                <a href="{% url 'gestion_cours:historique' %}" class="flex items-center p-3 rounded-lg text-gray-700 hover:bg-cbs-light hover:text-cbs-primary transition duration-150 ease-in-out">
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    Historique
-                </a>
 
-            </div>
+                <!-- Opérations -->
+                <div class="nav-section">
+                    <div class="nav-section-title">Opérations</div>
+                    
+                    <div class="nav-item">
+                        <a href="{% url 'gestion_cours:emargement_selection' %}" class="nav-link">
+                            <span class="nav-link-icon">
+                                <i class="fas fa-signature"></i>
+                            </span>
+                            <span class="nav-link-text">Émargement</span>
+                        </a>
+                    </div>
 
-            <div class="px-4 py-4 md:hidden border-t border-gray-100">
-                {% if user.is_authenticated %}
-                    <form method="post" action="{% url 'logout' %}" class="w-full">
-                        {% csrf_token %}
-                        <button type="submit" class="w-full text-left p-3 rounded-lg text-sm font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 transition duration-150">
-                            Déconnexion
-                        </button>
-                    </form>
-                {% else %}
-                    <a href="{% url 'login' %}" class="w-full text-left p-3 rounded-lg text-sm font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 transition duration-150">
-                        Connexion
-                    </a>
-                {% endif %}
+                    <div class="nav-item">
+                        <a href="{% url 'gestion_cours:evaluation_list' %}" class="nav-link">
+                            <span class="nav-link-icon">
+                                <i class="fas fa-star"></i>
+                            </span>
+                            <span class="nav-link-text">Évaluations</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Historique -->
+                <div class="nav-section">
+                    <div class="nav-item">
+                        <a href="{% url 'gestion_cours:historique' %}" class="nav-link">
+                            <span class="nav-link-icon">
+                                <i class="fas fa-history"></i>
+                            </span>
+                            <span class="nav-link-text">Historique</span>
+                        </a>
+                    </div>
+                </div>
             </div>
         </nav>
 
-        <main class="flex-1 p-4 md:p-8 overflow-y-auto"> 
-            <div class="max-w-7xl mx-auto h-full">
+        <!-- Sidebar Overlay (Mobile) -->
+        <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+        <!-- Main Content -->
+        <main class="app-main">
+            <div class="animate-fade-in-up">
                 {% block content %}
                 <h1 class="text-3xl font-extrabold text-gray-900 mb-6">Bienvenue sur le Tableau de Bord</h1>
-                <div class="bg-white p-6 rounded-xl shadow-lg">
-                    <p class="text-gray-600">Ceci est le contenu par défaut de la page. Les pages comme l'Historique étendront ce template et remplaceront ce bloc.</p>
+                <div class="card-modern">
+                    <p class="text-gray-600">Ceci est le contenu par défaut de la page.</p>
                 </div>
                 {% endblock content %}
             </div>
         </main>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
-    <script>
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('sidebar-overlay');
-        const menuBtnHeader = document.getElementById('menu-btn-header'); // Utilisé uniquement le bouton header
-
-        function toggleSidebar() {
-            const isActive = sidebar.classList.toggle('is-active');
-            overlay.classList.toggle('active', isActive);
-            document.body.style.overflow = isActive ? 'hidden' : 'auto';
-        }
-
-        if (menuBtnHeader) {
-            menuBtnHeader.addEventListener('click', toggleSidebar);
-        }
-        
-        overlay.addEventListener('click', toggleSidebar);
-        
-        // Gère le redimensionnement pour corriger le scroll et l'état de la sidebar sur desktop
-        window.addEventListener('resize', () => {
-            if (window.innerWidth >= 768) {
-                // Assure que le scroll revient à la normale sur desktop
-                document.body.style.overflow = 'auto'; 
-                // Ferme la sidebar si elle est ouverte et on passe en mode desktop
-                if (sidebar.classList.contains('is-active')) {
-                    sidebar.classList.remove('is-active');
-                    overlay.classList.remove('active');
-                }
-            } else {
-                // S'assurer que le scroll est activé si la sidebar est fermée
-                if (!sidebar.classList.contains('is-active')) {
-                    document.body.style.overflow = 'auto';
-                }
-            }
-        });
-
-        // Retrait de la classe is-active au chargement sur mobile si elle existe
-        if (window.innerWidth < 768) {
-            sidebar.classList.remove('is-active');
-        }
-    </script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="{% static 'js/sidebar.js' %}"></script>
+    
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

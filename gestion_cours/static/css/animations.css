@@ -1,0 +1,124 @@
+/* ============================================
+   ANIMATIONS & KEYFRAMES (Durée ajustée à 0.15s)
+   ============================================ */
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+    /* Réduction du décalage pour une animation rapide (0.15s) */
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInLeft {
+    from { opacity: 0; transform: translateX(-8px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeInRight {
+    from { opacity: 0; transform: translateX(8px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scaleIn {
+    /* Légère réduction de l'échelle pour la rapidité */
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+@keyframes shimmer {
+    0% { background-position: -1000px 0; }
+    100% { background-position: 1000px 0; }
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-10px); }
+    60% { transform: translateY(-5px); }
+}
+
+/* ============================================
+   UTILITY ANIMATION CLASSES (Appliquer la durée de 0.15s)
+   ============================================ */
+
+.animate-fade-in { animation: fadeIn 0.15s ease-in forwards; }
+.animate-fade-in-up { animation: fadeInUp 0.15s ease-out forwards; }
+.animate-fade-in-down { animation: fadeInDown 0.15s ease-out forwards; }
+.animate-fade-in-left { animation: fadeInLeft 0.15s ease-out forwards; }
+.animate-fade-in-right { animation: fadeInRight 0.15s ease-out forwards; }
+.animate-scale-in { animation: scaleIn 0.15s ease-out forwards; }
+.animate-pulse { animation: pulse 2s ease-in-out infinite; }
+.animate-bounce { animation: bounce 1s ease infinite; }
+.animate-rotate { animation: rotate 1s linear infinite; }
+
+.animate-shimmer {
+    background: linear-gradient(90deg, #f0f0f0 0%, #e0e0e0 50%, #f0f0f0 100%);
+    background-size: 1000px 100%;
+    animation: shimmer 2s infinite;
+}
+
+/* Staggered Animations */
+.stagger-item { opacity: 0; animation: fadeInUp 0.15s ease-out forwards; }
+.stagger-item:nth-child(1) { animation-delay: 0.1s; }
+.stagger-item:nth-child(2) { animation-delay: 0.2s; }
+.stagger-item:nth-child(3) { animation-delay: 0.3s; }
+.stagger-item:nth-child(4) { animation-delay: 0.4s; }
+.stagger-item:nth-child(5) { animation-delay: 0.5s; }
+.stagger-item:nth-child(6) { animation-delay: 0.6s; }
+
+
+/* ============================================
+   TRANSITION & HOVER UTILITIES (Durée 0.15s)
+   ============================================ */
+
+/* Applique la transition rapide à la plupart des éléments interactifs */
+.transition-all,
+.transition-fast,
+/* Nouvelle exigence: Appliquer la transition rapide aux éléments interactifs */
+.btn, 
+.action-btn, 
+.form-control, 
+.data-table tbody tr,
+.card,
+.table-card {
+    transition: all 0.15s ease-in-out;
+}
+
+.transition-slow {
+    transition: all 0.5s ease;
+}
+
+/* Hover Effects */
+.hover-lift:hover {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.hover-grow:hover {
+    transition: transform 0.15s ease;
+    transform: scale(1.03);
+}
+
+.hover-glow:hover {
+    transition: box-shadow 0.15s ease;
+    box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
+}

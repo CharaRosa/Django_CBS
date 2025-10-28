@@ -1,73 +1,103 @@
 {% extends "base.html" %}
+{% load static %}
+
 {% block title %}Historique des Émargements{% endblock %}
 
 {% block content %}
-<h1 class="text-3xl font-extrabold text-gray-900 mb-6">Historique Global des Émargements</h1>
-<p class="text-lg text-gray-800 mb-6">Année Académique Active : <span class="font-semibold">{{ annee_active }}</span></p>
+<!-- En-tête de page -->
+<div class="page-header">
+    <h1 class="page-title">
+        <i class="fas fa-history"></i>
+        Historique Global des Émargements
+    </h1>
+    <div class="page-actions">
+        <div class="export-buttons">
+            <a href="{% url 'gestion_cours:export_emargements_excel' %}?{{ request.GET.urlencode }}" 
+               class="btn-export btn-export-excel">
+                <i class="fas fa-file-excel me-2"></i>Excel
+            </a>
+            <a href="{% url 'gestion_cours:export_emargements_pdf' %}?{{ request.GET.urlencode }}" 
+               class="btn-export btn-export-pdf">
+                <i class="fas fa-file-pdf me-2"></i>PDF
+            </a>
+        </div>
+    </div>
+</div>
 
-<div class="bg-white p-6 rounded-xl shadow-lg mb-6 border border-gray-200">
-    <h2 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">Filtrer les Émargements</h2>
-    <form method="get" class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-7 gap-4 items-end">
+<!-- Info année académique -->
+<div class="alert alert-info">
+    <div class="alert-icon">
+        <i class="fas fa-calendar-alt"></i>
+    </div>
+    <span><strong>Année Académique Active:</strong> {{ annee_active }}</span>
+</div>
+
+<!-- Filtres -->
+<div class="filter-card">
+    <div class="filter-header">
+        <i class="fas fa-filter"></i>
+        Filtrer les Émargements
+    </div>
+    
+    <form method="get" class="filter-form">
         {% for field in filter.form %}
-        <div>
-            <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">{{ field.label }}</label>
+        <div class="filter-group">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
             {{ field }}
         </div>
         {% endfor %}
         
-        <div class="flex space-x-2">
-            <button type="submit" class="flex-1 px-4 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700">Filtrer</button>
-            <a href="{% url 'gestion_cours:historique' %}" class="flex-1 px-4 py-2 border text-center border-gray-300 text-gray-700 rounded-md hover:bg-gray-50">Réinitialiser</a>
+        <div class="filter-actions">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-search me-2"></i>Filtrer
+            </button>
+            <a href="{% url 'gestion_cours:historique' %}" class="btn btn-secondary">
+                <i class="fas fa-redo me-2"></i>Réinitialiser
+            </a>
         </div>
     </form>
 </div>
 
-<div class="mb-4 flex justify-end space-x-3">
-    <a href="{% url 'gestion_cours:export_emargements_excel' %}?{{ request.GET.urlencode }}" class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
-        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-        Exporter Excel
-    </a>
-    <a href="{% url 'gestion_cours:export_emargements_pdf' %}?{{ request.GET.urlencode }}" class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
-        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
-        Exporter PDF
-    </a>
-</div>
-
-<div class="bg-white rounded-xl shadow-lg overflow-hidden">
-    {% if historique %}
-    <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
+<!-- Tableau -->
+<div class="table-card">
+    <div class="table-wrapper">
+        {% if historique %}
+        <table class="data-table">
+            <thead>
                 <tr>
-                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Date</th>
-                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Matière</th>
-                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Professeur</th>
-                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Filière</th>
-                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Niveau</th>
-                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Semestre</th>
-                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Heures</th>
+                    <th>Date</th>
+                    <th>Matière</th>
+                    <th>Professeur</th>
+                    <th>Filière</th>
+                    <th>Niveau</th>
+                    <th>Semestre</th>
+                    <th class="text-center">Heures</th>
                 </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
+            <tbody>
                 {% for emarg in historique %}
-                <tr class="hover:bg-gray-50">
-                    <td class="px-6 py-4 text-sm text-gray-900">{{ emarg.date_emar|date:"d/m/Y" }}</td>
-                    <td class="px-6 py-4 text-sm text-gray-900">{{ emarg.matiere_programmer.matiere.libelle }}</td>
-                    <td class="px-6 py-4 text-sm text-gray-700">{{ emarg.matiere_programmer.professeur }}</td>
-                    <td class="px-6 py-4 text-sm text-gray-700">{{ emarg.matiere_programmer.filiere.code }}</td>
-                    <td class="px-6 py-4 text-sm text-gray-700">{{ emarg.matiere_programmer.niveau.libelle }} {{ emarg.matiere_programmer.niveau.niv }}</td>
-                    <td class="px-6 py-4 text-sm text-gray-700">{{ emarg.matiere_programmer.get_semestre_display }}</td>
-                    <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ emarg.heure_eff }}h</td>
+                <tr>
+                    <td>{{ emarg.date_emar|date:"d/m/Y" }}</td>
+                    <td>{{ emarg.matiere_programmer.matiere.libelle }}</td>
+                    <td>{{ emarg.matiere_programmer.professeur }}</td>
+                    <td>{{ emarg.matiere_programmer.filiere.code }}</td>
+                    <td>{{ emarg.matiere_programmer.niveau.libelle }} {{ emarg.matiere_programmer.niveau.niv }}</td>
+                    <td>{{ emarg.matiere_programmer.get_semestre_display }}</td>
+                    <td class="text-center col-number">
+                        <span class="badge badge-info">{{ emarg.heure_eff }}h</span>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
+        {% else %}
+        <!-- État vide -->
+        <div class="empty-state">
+            <i class="fas fa-inbox empty-state-icon"></i>
+            <h3 class="empty-state-title">Aucun émargement trouvé</h3>
+            <p class="empty-state-text">Essayez de modifier vos filtres</p>
+        </div>
+        {% endif %}
     </div>
-    {% else %}
-    <div class="p-8 text-center text-gray-500">
-        <h3 class="mt-2 text-sm font-medium text-gray-900">Aucun émargement trouvé</h3>
-        <p class="mt-1 text-sm text-gray-500">Essayez de modifier vos filtres.</p>
-    </div>
-    {% endif %}
 </div>
 {% endblock %}

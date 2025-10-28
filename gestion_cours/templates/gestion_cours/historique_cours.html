@@ -1,92 +1,109 @@
-{% extends 'base.html' %} 
+{% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Historique : {{ matiere_prog.matiere.libelle }} - {{ matiere_prog.niveau.libelle }}{% endblock %}
+{% block title %}Historique : {{ matiere_prog.matiere.libelle }}{% endblock %}
 
 {% block content %}
-
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    
-    <div class="flex justify-between items-center mb-6 border-b pb-3">
-        <h1 class="text-3xl font-extrabold text-gray-900">
-            Historique détaillé du Cours
-        </h1>
-        <a href="{% url 'gestion_cours:home' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cbs-primary">
-            &larr; Retour au Tableau de Bord
+<!-- En-tête de page -->
+<div class="page-header">
+    <h1 class="page-title">
+        <i class="fas fa-history"></i>
+        Historique du Cours
+    </h1>
+    <div class="page-actions">
+        <a href="{% url 'gestion_cours:home' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Retour au Tableau de Bord
         </a>
     </div>
+</div>
 
-    <div class="bg-white shadow overflow-hidden sm:rounded-lg border-l-4 border-cbs-primary p-6 mb-6">
-        <h2 class="text-2xl font-bold text-cbs-primary mb-2">
-            {{ matiere_prog.matiere.libelle }}
-            <span class="text-lg font-normal text-gray-500">({{ matiere_prog.filiere.code }} - {{ matiere_prog.niveau.libelle }} - {{ matiere_prog.semestre }})</span>
-            
-        </h2>
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-x-6 gap-y-1 text-sm mt-4">
-            <p class="text-gray-700"><strong class="font-semibold text-gray-900">Professeur :</strong> {{ matiere_prog.professeur.prenoms }} {{ matiere_prog.professeur.nom }}</p>
-            <p class="text-gray-700"><strong class="font-semibold text-gray-900">Année Académique :</strong> {{ matiere_prog.annee_academique.annee_accademique }}</p>
-            <p class="text-gray-700"><strong class="font-semibold text-gray-900">Volume Prévu :</strong> {{ matiere_prog.nbr_heure|floatformat:2 }} heures</p>
-            <p class="text-gray-700">
-                <strong class="font-semibold text-gray-900">Heures Faites :</strong> 
-                <span class="text-cbs-primary font-bold">{{ progression_details.total_heures_faites|floatformat:2 }}h</span>
-            </p> 
+<!-- Informations du cours -->
+<div class="alert alert-info">
+    <div class="alert-icon">
+        <i class="fas fa-book"></i>
+    </div>
+    <div>
+        <h4 class="mb-2">
+            <strong>{{ matiere_prog.matiere.libelle }}</strong>
+            <span class="badge badge-info ms-2">{{ matiere_prog.filiere.code }} - {{ matiere_prog.niveau.libelle }}</span>
+        </h4>
+        <div class="row">
+            <div class="col-md-3">
+                <p class="mb-1"><strong>Professeur:</strong> {{ matiere_prog.professeur.prenoms }} {{ matiere_prog.professeur.nom }}</p>
+            </div>
+            <div class="col-md-3">
+                <p class="mb-1"><strong>Année:</strong> {{ matiere_prog.annee_academique.annee_accademique }}</p>
+            </div>
+            <div class="col-md-3">
+                <p class="mb-1"><strong>Volume Prévu:</strong> {{ matiere_prog.nbr_heure|floatformat:2 }}h</p>
+            </div>
+            <div class="col-md-3">
+                <p class="mb-1">
+                    <strong>Heures Faites:</strong> 
+                    <span class="badge badge-success">{{ progression_details.total_heures_faites|floatformat:2 }}h</span>
+                </p>
+            </div>
         </div>
+    </div>
+</div>
+
+<!-- Tableau des séances -->
+<div class="table-card">
+    <div class="table-header">
+        <h2 class="table-title">
+            <i class="fas fa-list"></i>
+            Séances Émargées ({{ historique_emargement|length }})
+        </h2>
     </div>
     
-    {# ANCIENNE SECTION "Résumé et Progression" SUPPRIMÉE #}
-    {# Les lignes 40 à 50 ont été retirées #}
-
-    <h3 class="text-xl font-bold text-gray-900 mb-4 border-b pb-2">Liste des Séances Émargées ({{ historique_emargement|length }} séances)</h3>
-
-    {% if historique_emargement %}
-    <div class="overflow-x-auto shadow-lg sm:rounded-lg"> 
-        <div class="bg-white">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50 sticky top-0 z-10">
-                    <tr>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Heures Effectuées</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thème Abordé</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Émargé par (Utilisateur)</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    {% for emargement in historique_emargement %}
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-3 whitespace-nowrap text-sm font-medium text-gray-900">{{ emargement.date_emar|date:"d/m/Y" }}</td>
-                        <td class="px-6 py-3 whitespace-nowrap text-sm text-cbs-primary font-semibold">{{ emargement.heure_eff|floatformat:2 }}h</td>
-                        <td class="px-6 py-3 text-sm text-gray-700 max-w-lg overflow-hidden truncate hover:whitespace-normal hover:overflow-visible">{{ emargement.theme_aborde }}</td> 
-                        
-                        <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-500">
-                            {% with user=emargement.emarge_par %}
-                                {% if user %}
-                                    <span class="font-medium text-gray-900">{{ user.get_full_name|default:user.username }}</span>
-                                    <br>
-                                    {# Logique pour afficher le rôle (Superuser ou Groupe) #}
-                                    {% if user.is_superuser %}
-                                        <span class="text-xs px-2 inline-flex leading-5 font-semibold rounded-full bg-red-100 text-red-800">Administrateur Système</span>
-                                    {% elif user.groups.all %}
-                                        <span class="text-xs px-2 inline-flex leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">{{ user.groups.first.name }}</span>
-                                    {% else %}
-                                        <span class="text-xs text-gray-400">Utilisateur (Pas de groupe)</span>
-                                    {% endif %}
+    <div class="table-wrapper">
+        {% if historique_emargement %}
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th class="text-center">Heures</th>
+                    <th>Thème Abordé</th>
+                    <th>Émargé par</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for emargement in historique_emargement %}
+                <tr>
+                    <td>{{ emargement.date_emar|date:"d/m/Y" }}</td>
+                    <td class="text-center col-number">
+                        <span class="badge badge-info">{{ emargement.heure_eff|floatformat:2 }}h</span>
+                    </td>
+                    <td class="col-description">{{ emargement.theme_aborde }}</td>
+                    <td>
+                        {% with user=emargement.emarge_par %}
+                            {% if user %}
+                                <strong>{{ user.get_full_name|default:user.username }}</strong>
+                                <br>
+                                {% if user.is_superuser %}
+                                    <span class="badge badge-danger">Administrateur</span>
+                                {% elif user.groups.all %}
+                                    <span class="badge badge-primary">{{ user.groups.first.name }}</span>
                                 {% else %}
-                                    <span class="text-sm font-bold text-red-500">N/A (Donnée Manquante)</span>
+                                    <span class="badge badge-secondary">Utilisateur</span>
                                 {% endif %}
-                            {% endwith %}
-                        </td>
-                        
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                            {% else %}
+                                <span class="text-danger">N/A</span>
+                            {% endif %}
+                        {% endwith %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <!-- État vide -->
+        <div class="empty-state">
+            <i class="fas fa-calendar-times empty-state-icon"></i>
+            <h3 class="empty-state-title">Aucune séance émargée</h3>
+            <p class="empty-state-text">Les séances apparaîtront ici une fois enregistrées</p>
         </div>
+        {% endif %}
     </div>
-    {% else %}
-    <div class="p-4 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-700 rounded-md">
-        <p class="font-medium">Aucune séance émargée pour le moment.</p>
-    </div>
-    {% endif %}
-
 </div>
 {% endblock content %}

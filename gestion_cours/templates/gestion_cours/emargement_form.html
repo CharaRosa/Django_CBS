@@ -1,78 +1,72 @@
 {% extends "base.html" %}
-{% load crispy_forms_tags %} 
+{% load crispy_forms_tags %}
+
 {% block title %}Saisie de Séance - {{ matiere_prog.matiere.libelle }}{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-8 col-md-10">
-        <div class="card shadow-xl border-0">
-            <div class="card-header bg-amber-600 text-white text-center p-4 rounded-t-xl">
-                <h2 class="mb-0 text-2xl font-bold">Feuille d'Émargement de Séance</h2>
+<div class="form-container">
+    <div class="form-card">
+        <div class="form-header">
+            <h1 class="form-title">
+                <i class="fas fa-signature"></i>
+                Feuille d'Émargement de Séance
+            </h1>
+            <p class="form-subtitle">
+                Enregistrement d'une nouvelle séance de cours
+            </p>
+        </div>
+        
+        <!-- Informations du cours -->
+        <div class="alert alert-info">
+            <div class="alert-icon">
+                <i class="fas fa-book"></i>
             </div>
-            <div class="card-body p-6">
-                
-                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-6 space-y-2">
-                    <h4 class="text-xl font-semibold text-amber-700">{{ matiere_prog.matiere.libelle }}</h4>
-                    
-                    <div class="flex justify-between text-sm text-gray-700">
-                        <p>
-                            <strong>Niveau:</strong> {{ matiere_prog.niveau.libelle }} {{ matiere_prog.niveau.niv }} ({{ matiere_prog.filiere.code }})
+            <div>
+                <h4 class="mb-2"><strong>{{ matiere_prog.matiere.libelle }}</strong></h4>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>Niveau:</strong> {{ matiere_prog.niveau.libelle }} {{ matiere_prog.niveau.niv }} ({{ matiere_prog.filiere.code }})</p>
+                        <p class="mb-1"><strong>Professeur:</strong> {{ matiere_prog.professeur.nom }} {{ matiere_prog.professeur.prenoms }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-1">
+                            <strong>Volume Prévu:</strong> 
+                            <span class="badge badge-info">{{ matiere_prog.nbr_heure }}h</span>
                         </p>
-                        <p>
-                            <strong>Professeur:</strong> 
-                            <span class="font-medium text-gray-800">
-                                {{ matiere_prog.professeur.nom }} {{ matiere_prog.professeur.prenoms }}
-                            </span>
+                        <p class="mb-1">
+                            <strong>Heures Réalisées:</strong> 
+                            <span class="badge badge-info">{{ matiere_prog.total_heures_faites|default:"0.00"|floatformat:2 }}h</span>
+                        </p>
+                        <p class="mb-0">
+                            <strong>Volume Restant:</strong> 
+                            {% if volume_restant <= 0 %}
+                                <span class="badge badge-success">0.00h (Complété)</span>
+                            {% else %}
+                                <span class="badge badge-warning">{{ volume_restant|floatformat:2 }}h</span>
+                            {% endif %}
                         </p>
                     </div>
-
-                    <p class="text-sm text-gray-700 pt-2 border-t border-gray-200">
-                        Volume Prévu : <strong class="text-blue-600">{{ matiere_prog.nbr_heure }}h</strong> | 
-                        Heures Réalisées : <strong class="text-blue-600">{{ matiere_prog.total_heures_faites|default:"0.00"|floatformat:2 }}h</strong>
-                    </p>
-
-                    <p class="text-md font-bold pt-1">
-                        Volume Restant : 
-                        {% if volume_restant <= 0 %}
-                            <span class="text-green-600">0.00h (Cours Complété)</span>
-                        {% else %}
-                            <span class="text-red-600">{{ volume_restant|floatformat:2 }}h</span>
-                        {% endif %}
-                    </p>
                 </div>
-
-                <form method="post" class="space-y-4">
-                    {% csrf_token %}
-                    
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            {{ form.date_emar|as_crispy_field }}
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            {{ form.heure_eff|as_crispy_field }}
-                        </div>
-                    </div>
-                    
-                    <hr class="mt-5 mb-4">
-                    
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary btn-lg shadow-lg">
-                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            Enregistrer la Séance d'Émargement
-                        </button>
-                        <a href="{% url 'gestion_cours:emargement_selection' %}"
-                            class="btn btn-outline-secondary">
-                            Annuler et Retourner à la Sélection des Cours
-                        </a>
-                    </div>
-                </form>
             </div>
         </div>
+
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-grid-2">
+                {{ form.date_emar|as_crispy_field }}
+                {{ form.heure_eff|as_crispy_field }}
+            </div>
+            
+            <div class="form-actions">
+                <a href="{% url 'gestion_cours:emargement_selection' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Retour à la Sélection
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-check me-2"></i>Enregistrer la Séance
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 {% endblock content %}

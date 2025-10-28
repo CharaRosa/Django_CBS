@@ -1,40 +1,92 @@
 {% extends "base.html" %}
-{% load static %}
 {% load crispy_forms_tags %}
 
 {% block title %}
     {% if object %}Modification du Professeur{% else %}Ajout d'un Professeur{% endif %}
-{% endblock title %}
+{% endblock %}
 
 {% block content %}
-<div class="max-w-xl mx-auto">
-    
-    <h1 class="text-3xl font-extrabold text-gray-900 mb-6">
-        {% if object %}
-            Modifier le Professeur : <span class="text-amber-600">{{ object }}</span>
-        {% else %}
-            Créer un Nouveau Professeur
-        {% endif %}
-    </h1>
+<div class="form-container">
+    <div class="form-card">
+        <div class="form-header">
+            <h1 class="form-title">
+                <i class="fas fa-user-plus"></i>
+                {% if object %}
+                    Modifier le Professeur : <span class="text-primary">{{ object }}</span>
+                {% else %}
+                    Nouveau Professeur
+                {% endif %}
+            </h1>
+            <p class="form-subtitle">
+                Remplissez les informations ci-dessous
+            </p>
+        </div>
 
-    <div class="bg-white p-6 md:p-8 rounded-xl shadow-lg border-t-4 border-amber-500">
-        <form method="post" enctype="multipart/form-data"> {# Assurer la compatibilité avec les fichiers (CV) #}
+        <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
-            {{ form|crispy }}
             
-            <div class="flex justify-end space-x-4 pt-4">
+            <!-- Section 1 : Informations personnelles -->
+            <div class="form-section">
+                <h3 class="form-section-title">
+                    <i class="fas fa-user"></i>
+                    Informations Personnelles
+                </h3>
                 
-                {# Bouton Annuler/Retour #}
-                <a href="{% url 'gestion_cours:professeur_list' %}" class="px-6 py-2 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 rounded-lg shadow-sm transition duration-150">
-                    Annuler
+                <div class="form-grid-2">
+                    {{ form.nom|as_crispy_field }}
+                    {{ form.prenoms|as_crispy_field }}
+                </div>
+            </div>
+            
+            <!-- Section 2 : Contact -->
+            <div class="form-section">
+                <h3 class="form-section-title">
+                    <i class="fas fa-address-book"></i>
+                    Coordonnées
+                </h3>
+                
+                <div class="form-grid-2">
+                    {{ form.email|as_crispy_field }}
+                    {{ form.contact|as_crispy_field }}
+                </div>
+            </div>
+            
+            <!-- Section 3 : Informations académiques (si les champs existent) -->
+            {% if form.grade or form.domaine %}
+            <div class="form-section">
+                <h3 class="form-section-title">
+                    <i class="fas fa-graduation-cap"></i>
+                    Informations Académiques
+                </h3>
+                
+                <div class="form-grid-2">
+                    {% if form.grade %}{{ form.grade|as_crispy_field }}{% endif %}
+                    {% if form.domaine %}{{ form.domaine|as_crispy_field }}{% endif %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- CV (si le champ existe) -->
+            {% if form.cv %}
+            <div class="form-section">
+                <h3 class="form-section-title">
+                    <i class="fas fa-file-upload"></i>
+                    Documents
+                </h3>
+                {{ form.cv|as_crispy_field }}
+            </div>
+            {% endif %}
+            
+            <div class="form-actions">
+                <a href="{% url 'gestion_cours:professeur_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-times me-2"></i>Annuler
                 </a>
-                
-                {# Bouton de Soumission #}
-                <button type="submit" class="px-6 py-2 text-white bg-amber-600 hover:bg-amber-700 rounded-lg shadow-md transition duration-150 font-semibold">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-2"></i>
                     {% if object %}Enregistrer les modifications{% else %}Créer le Professeur{% endif %}
                 </button>
             </div>
         </form>
     </div>
 </div>
-{% endblock content %}
+{% endblock %}

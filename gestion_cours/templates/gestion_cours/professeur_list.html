@@ -1,107 +1,131 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Liste des Professeurs{% endblock title %}
+{% block title %}Liste des Professeurs{% endblock %}
 
 {% block content %}
-<h1 class="text-3xl font-extrabold text-gray-900 mb-6">Gestion des Professeurs</h1>
-
-<div class="mb-4 flex justify-between items-center">
-    <a href="{% url 'gestion_cours:professeur_create' %}" class="flex items-center text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 py-2 px-4 rounded-lg transition duration-150 shadow-md">
-        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-        Ajouter un Professeur
-    </a>
-    
-    <!-- Boutons d'Export -->
-    <div class="flex space-x-2">
-        <a href="?{% for key, value in request.GET.items %}{% if key != 'export' %}{{ key }}={{ value }}&{% endif %}{% endfor %}export=excel" 
-           class="flex items-center text-sm font-medium text-white bg-green-600 hover:bg-green-700 py-2 px-4 rounded-lg transition duration-150 shadow-md">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-            Export Excel
-        </a>
-        <a href="?{% for key, value in request.GET.items %}{% if key != 'export' %}{{ key }}={{ value }}&{% endif %}{% endfor %}export=pdf" 
-           class="flex items-center text-sm font-medium text-white bg-red-600 hover:bg-red-700 py-2 px-4 rounded-lg transition duration-150 shadow-md">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
-            Export PDF
+<!-- En-tête de page -->
+<div class="page-header">
+    <h1 class="page-title">
+        <i class="fas fa-user-tie"></i>
+        Gestion des Professeurs
+    </h1>
+    <div class="page-actions">
+        <div class="export-buttons">
+            <a href="?{% for key, value in request.GET.items %}{% if key != 'export' %}{{ key }}={{ value }}&{% endif %}{% endfor %}export=excel" 
+               class="btn-export btn-export-excel">
+                <i class="fas fa-file-excel me-2"></i>Excel
+            </a>
+            <a href="?{% for key, value in request.GET.items %}{% if key != 'export' %}{{ key }}={{ value }}&{% endif %}{% endfor %}export=pdf" 
+               class="btn-export btn-export-pdf">
+                <i class="fas fa-file-pdf me-2"></i>PDF
+            </a>
+        </div>
+        <a href="{% url 'gestion_cours:professeur_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Ajouter un Professeur
         </a>
     </div>
 </div>
 
+<!-- Messages -->
 {% include "gestion_cours/includes/messages.html" %}
 
-<!-- ZONE DE FILTRES -->
-<div class="bg-white p-6 rounded-xl shadow-lg mb-6 border border-gray-200">
-    <h2 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">
-        <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+<!-- Filtres -->
+<div class="filter-card">
+    <div class="filter-header">
+        <i class="fas fa-filter"></i>
         Filtrer les Professeurs
-    </h2>
-    <form method="get" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+    </div>
+    
+    <form method="get" class="filter-form">
         {% for field in filter.form %}
-        <div>
-            <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
-                {{ field.label }}
-            </label>
+        <div class="filter-group">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
             {{ field }}
         </div>
         {% endfor %}
-        <div class="flex items-end space-x-2">
-            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-150 flex-1">
-                <svg class="w-5 h-5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                Filtrer
+        
+        <div class="filter-actions">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-search me-2"></i>Filtrer
             </button>
-            <a href="{% url 'gestion_cours:professeur_list' %}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition duration-150">
-                Réinitialiser
+            <a href="{% url 'gestion_cours:professeur_list' %}" class="btn btn-secondary">
+                <i class="fas fa-redo me-2"></i>Réinitialiser
             </a>
         </div>
     </form>
 </div>
 
-<!-- TABLEAU DES RÉSULTATS -->
-<div class="bg-white p-6 rounded-xl shadow-lg overflow-x-auto">
-    {% if object_list %}
-    <p class="text-sm text-gray-600 mb-4">{{ object_list|length }} professeur(s) trouvé(s)</p>
-    <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-            <tr>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Nom</th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Prénoms</th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Contact</th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Email</th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Grade</th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Domaine</th>
-                <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Actions</th>
-            </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-            {% for professeur in object_list %}
-            <tr class="hover:bg-gray-50 transition duration-150">
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ professeur.nom }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ professeur.prenoms }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ professeur.contact }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ professeur.email }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ professeur.grade|default:"N/A" }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ professeur.domaine|default:"N/A" }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                    <a href="{% url 'gestion_cours:professeur_update' professeur.pk %}" class="text-indigo-600 hover:text-indigo-900 mr-3">Modifier</a>
-                    <a href="{% url 'gestion_cours:professeur_delete' professeur.pk %}" class="text-red-600 hover:text-red-900">Supprimer</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <div class="text-center py-12">
-        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
-        </svg>
-        <h3 class="mt-2 text-sm font-medium text-gray-900">Aucun professeur trouvé</h3>
-        <p class="mt-1 text-sm text-gray-500">Commencez par ajouter un nouveau professeur.</p>
-        <div class="mt-6">
-            <a href="{% url 'gestion_cours:professeur_create' %}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-amber-600 hover:bg-amber-700">
-                Ajouter un Professeur
+<!-- Tableau -->
+<div class="table-card">
+    <div class="table-wrapper">
+        {% if object_list %}
+        <div class="results-info">
+            {{ object_list|length }} professeur(s) trouvé(s)
+        </div>
+        
+        <table class="data-table" data-sortable>
+            <thead>
+                <tr>
+                    <th data-sortable>Nom</th>
+                    <th data-sortable>Prénoms</th>
+                    <th data-sortable>Contact</th>
+                    <th data-sortable>Email</th>
+                    <th data-sortable>Grade</th>
+                    <th data-sortable>Domaine</th>
+                    <th class="col-actions">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for professeur in object_list %}
+                <tr>
+                    <td class="font-medium">{{ professeur.nom }}</td>
+                    <td>{{ professeur.prenoms }}</td>
+                    <td>{{ professeur.contact }}</td>
+                    <td>{{ professeur.email }}</td>
+                    <td>
+                        {% if professeur.grade %}
+                            <span class="badge badge-info">{{ professeur.grade }}</span>
+                        {% else %}
+                            <span class="text-muted">N/A</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ professeur.domaine|default:"N/A" }}</td>
+                    <td class="col-actions">
+                        <div class="action-buttons">
+                            <a href="{% url 'gestion_cours:professeur_update' professeur.pk %}" 
+                               class="action-btn action-btn-edit" 
+                               title="Modifier">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'gestion_cours:professeur_delete' professeur.pk %}" 
+                               class="action-btn action-btn-delete" 
+                               title="Supprimer"
+                               data-confirm="Voulez-vous vraiment supprimer ce professeur ?">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <!-- État vide -->
+        <div class="empty-state">
+            <i class="fas fa-user-tie empty-state-icon"></i>
+            <h3 class="empty-state-title">Aucun professeur enregistré</h3>
+            <p class="empty-state-text">Commencez par ajouter votre premier professeur</p>
+            <a href="{% url 'gestion_cours:professeur_create' %}" class="empty-state-action">
+                <i class="fas fa-plus me-2"></i>Ajouter un Professeur
             </a>
         </div>
+        {% endif %}
     </div>
-    {% endif %}
 </div>
-{% endblock content %}
+
+<!-- Pagination -->
+{% if is_paginated %}
+    {% include 'gestion_cours/includes/pagination.html' %}
+{% endif %}
+{% endblock %}
