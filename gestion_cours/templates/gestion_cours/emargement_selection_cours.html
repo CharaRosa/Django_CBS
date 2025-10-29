@@ -14,14 +14,7 @@
 </div>
 
 <!-- Messages -->
-{% if messages %}
-    {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">
-            <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' or message.tags == 'danger' %}exclamation-circle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %} alert-icon"></i>
-            <span>{{ message }}</span>
-        </div>
-    {% endfor %}
-{% endif %}
+{% include "gestion_cours/includes/messages.html" %}
 
 <!-- Filtres -->
 <div class="filter-card">
@@ -29,15 +22,18 @@
         <i class="fas fa-filter"></i>
         Filtrer les Cours
     </div>
-    
     <form method="get" class="filter-form">
-        {% for field in filter.form %}
-        <div class="filter-group">
-            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-            {{ field }}
+        <div class="row">
+            <div class="col-md-4">
+                {{ filter.form.matiere }}
+            </div>
+            <div class="col-md-4">
+                {{ filter.form.professeur }}
+            </div>
+            <div class="col-md-4">
+                {{ filter.form.filiere }}
+            </div>
         </div>
-        {% endfor %}
-        
         <div class="filter-actions">
             <button type="submit" class="btn btn-primary">
                 <i class="fas fa-search me-2"></i>Filtrer
@@ -49,38 +45,82 @@
     </form>
 </div>
 
-<!-- Tableau -->
-<div class="table-card">
+<!-- Table des cours -->
+<div class="table-card mt-4">
     <div class="table-wrapper">
         {% if cours_list %}
         <table class="data-table">
             <thead>
                 <tr>
                     <th>Matière</th>
-                    <th>Filière/Niveau</th>
                     <th>Professeur</th>
-                    <th>Semestre</th>
-                    <th class="text-center">Vol. Horaire</th>
-                    <th class="text-center">H. Faites</th>
-                    <th class="text-center">Actions</th>
+                    <th>Filière/Niveau</th>
+                    <th class="text-center">Volume</th>
+                    <th class="text-center">Progression</th>
+                    <th class="text-center col-actions">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for cours in cours_list %}
                 <tr>
-                    <td>{{ cours.matiere.libelle }}</td>
-                    <td>{{ cours.filiere.code }} - {{ cours.niveau.niv }}</td>
-                    <td>{{ cours.professeur }}</td>
-                    <td>{{ cours.get_semestre_display }}</td>
-                    <td class="text-center col-number">{{ cours.nbr_heure }}h</td>
-                    <td class="text-center col-number">{{ cours.total_heures_faites|default:"0" }}h</td>
-                    <td class="col-actions">
-                        <div class="action-buttons">
-                            <a href="{% url 'gestion_cours:emargement' cours.pk %}" 
-                               class="action-btn action-btn-primary" 
-                               title="Émarger ce cours">
-                                <i class="fas fa-signature"></i>
-                            </a>
+                    <td>
+                        <strong>{{ cours.matiere.libelle }}</strong>
+                        <br>
+                        <small class="text-muted">{{ cours.matiere.code }}</small>
+                    </td>
+                    <td>{{ cours.professeur.nom }} {{ cours.professeur.prenoms }}</td>
+                    <td>
+                        <span class="badge badge-info">
+                            {{ cours.filiere.code }} - {{ cours.niveau.libelle }}
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <strong>{{ cours.total_heures_faites|default:0 }}h</strong> / {{ cours.nbr_heure }}h
+                    </td>
+                    <td class="text-center">
+                        <div class="progress" style="height: 25px;">
+                            <div class="progress-bar 
+                                {% if cours.progression_reelle >= 100 %}bg-success
+                                {% elif cours.progression_reelle >= 75 %}bg-info
+                                {% elif cours.progression_reelle >= 50 %}bg-warning
+                                {% else %}bg-danger
+                                {% endif %}" role="progressbar" style="width: {{ cours.progression_reelle }}%;"
+                                aria-valuenow="{{ cours.progression_reelle }}" aria-valuemin="0" aria-valuemax="100">
+                                {{ cours.progression_reelle|floatformat:1 }}%
+                            </div>
+                        </div>
+                    </td>
+                    <td class="text-center">
+                        <div class="btn-group" role="group">
+                            <!-- CORRECTION: Bouton Émarger (désactivé si 100%) -->
+                            {% if cours.progression_reelle < 100 %} <a
+                                href="{% url 'gestion_cours:emargement' cours.pk %}" class="btn btn-sm btn-primary"
+                                title="Faire l'émargement">
+                                <i class="fas fa-signature"></i> Émarger
+                                </a>
+                                {% else %}
+                                <button class="btn btn-sm btn-secondary" disabled title="Cours complété">
+                                    <i class="fas fa-check-circle"></i> Complété
+                                </button>
+                                {% endif %}
+
+                                <!-- CORRECTION: Bouton Historique (toujours visible) -->
+                                <a href="{% url 'gestion_cours:historique_cours' cours.pk %}"
+                                    class="btn btn-sm btn-info" title="Voir l'historique des émargements">
+                                    <i class="fas fa-history"></i> Historique
+                                </a>
+
+                                <!-- CORRECTION: Bouton Évaluer (visible si 100% et pas encore évalué) -->
+                                {% if cours.peut_etre_evalue %}
+                                <a href="{% url 'gestion_cours:evaluation_manage' cours.pk %}"
+                                    class="btn btn-sm btn-success" title="Faire l'évaluation du cours">
+                                    <i class="fas fa-star"></i> Évaluer
+                                </a>
+                                {% elif cours.est_evalue %}
+                                <button class="btn btn-sm btn-outline-success" disabled title="Déjà évalué">
+                                    <i class="fas fa-check-double"></i> Évalué
+                                </button>
+                                {% endif %}
                         </div>
                     </td>
                 </tr>
@@ -88,21 +128,24 @@
             </tbody>
         </table>
         {% else %}
-        <!-- État vide -->
-        <div class="empty-state">
-            <i class="fas fa-inbox empty-state-icon"></i>
-            <h3 class="empty-state-title">Aucun cours trouvé</h3>
-            <p class="empty-state-text">Aucun cours ne correspond aux critères sélectionnés</p>
-            <a href="{% url 'gestion_cours:emargement_selection' %}" class="empty-state-action">
-                <i class="fas fa-redo me-2"></i>Réinitialiser les Filtres
-            </a>
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle alert-icon"></i>
+            <span>Aucun cours programmé pour l'année académique active.</span>
         </div>
         {% endif %}
     </div>
 </div>
 
-<!-- Pagination -->
-{% if is_paginated %}
-    {% include 'gestion_cours/includes/pagination.html' %}
-{% endif %}
-{% endblock content %}
+<!-- Légende -->
+<div class="alert alert-light mt-4">
+    <h5><i class="fas fa-info-circle"></i> Légende :</h5>
+    <ul class="mb-0">
+        <li><strong>Émarger</strong> : Enregistrer une nouvelle séance de cours</li>
+        <li><strong>Historique</strong> : Consulter toutes les séances déjà enregistrées</li>
+        <li><strong>Évaluer</strong> : Faire l'évaluation qualitative du cours (disponible uniquement si 100% complété
+            et pas encore évalué)</li>
+        <li><strong>Évalué</strong> : Le cours a déjà reçu une évaluation (non modifiable)</li>
+    </ul>
+</div>
+
+{% endblock %}

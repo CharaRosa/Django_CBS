@@ -25,9 +25,7 @@
 </div>
 
 <!-- Messages -->
-{% if messages %}
-    {% include 'gestion_cours/includes/messages.html' %}
-{% endif %}
+{% include "gestion_cours/includes/messages.html" %}
 
 <!-- Filtres -->
 <div class="filter-card">
@@ -35,15 +33,18 @@
         <i class="fas fa-filter"></i>
         Filtrer les Évaluations
     </div>
-    
     <form method="get" class="filter-form">
-        {% for field in filter.form %}
-        <div class="filter-group">
-            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-            {{ field }}
+        <div class="row">
+            <div class="col-md-4">
+                {{ filter.form.matiere_programmer__matiere }}
+            </div>
+            <div class="col-md-4">
+                {{ filter.form.matiere_programmer__professeur }}
+            </div>
+            <div class="col-md-4">
+                {{ filter.form.utilisateur_evaluation }}
+            </div>
         </div>
-        {% endfor %}
-        
         <div class="filter-actions">
             <button type="submit" class="btn btn-primary">
                 <i class="fas fa-search me-2"></i>Filtrer
@@ -55,47 +56,96 @@
     </form>
 </div>
 
-<!-- Tableau -->
-<div class="table-card">
+<!-- Table des évaluations -->
+<div class="table-card mt-4">
     <div class="table-wrapper">
         {% if evaluations %}
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>Matière</th>
+                    <th>Cours</th>
                     <th>Professeur</th>
-                    <th>Filière/Niveau</th>
-                    <th>Semestre</th>
+                    <th>Niveau</th>
+                    <!-- CORRECTION: Affichage des 3 colonnes -->
+                    <th>Résumé de l'Évaluation</th>
+                    <th>Appréciation AP</th>
+                    <th>Recommandations</th>
                     <th>Évalué par</th>
-                    <th>Résumé</th>
                 </tr>
             </thead>
             <tbody>
-                {% for eval in evaluations %}
+                {% for evaluation in evaluations %}
                 <tr>
-                    <td>{{ eval.matiere_programmer.matiere.libelle }}</td>
-                    <td>{{ eval.matiere_programmer.professeur }}</td>
-                    <td>{{ eval.matiere_programmer.filiere.code }} - {{ eval.matiere_programmer.niveau.niv }}</td>
-                    <td>{{ eval.matiere_programmer.get_semestre_display }}</td>
-                    <td>{{ eval.utilisateur_evaluation.username|default:"N/A" }}</td>
-                    <td class="col-description">{{ eval.resume_evaluation|truncatewords:15 }}</td>
+                    <td>
+                        <strong>{{ evaluation.matiere_programmer.matiere.libelle }}</strong>
+                        <br>
+                        <small class="text-muted">{{ evaluation.matiere_programmer.matiere.code }}</small>
+                    </td>
+                    <td>{{ evaluation.matiere_programmer.professeur }}</td>
+                    <td>
+                        <span class="badge badge-info">
+                            {{ evaluation.matiere_programmer.niveau.libelle }}
+                        </span>
+                    </td>
+                    <!-- CORRECTION: Colonne 1 - Résumé de l'Évaluation du Cours -->
+                    <td>
+                        {% if evaluation.resume_evaluation %}
+                            <div style="max-width: 250px; white-space: normal;">
+                                {{ evaluation.resume_evaluation|truncatewords:20 }}
+                            </div>
+                        {% else %}
+                            <em class="text-muted">Non renseigné</em>
+                        {% endif %}
+                    </td>
+                    <!-- CORRECTION: Colonne 2 - Appréciation de l'Assistant Pédagogique -->
+                    <td>
+                        {% if evaluation.appreciation_ap %}
+                            <div style="max-width: 250px; white-space: normal;">
+                                {{ evaluation.appreciation_ap|truncatewords:20 }}
+                            </div>
+                        {% else %}
+                            <em class="text-muted">Non renseigné</em>
+                        {% endif %}
+                    </td>
+                    <!-- CORRECTION: Colonne 3 - Recommandations et Suggestions -->
+                    <td>
+                        {% if evaluation.recommandations %}
+                            <div style="max-width: 250px; white-space: normal;">
+                                {{ evaluation.recommandations|truncatewords:20 }}
+                            </div>
+                        {% else %}
+                            <em class="text-muted">Non renseigné</em>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if evaluation.utilisateur_evaluation %}
+                            {{ evaluation.utilisateur_evaluation.get_full_name }}
+                        {% else %}
+                            <em class="text-muted">Système</em>
+                        {% endif %}
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
         {% else %}
-        <!-- État vide -->
-        <div class="empty-state">
-            <i class="fas fa-clipboard-check empty-state-icon"></i>
-            <h3 class="empty-state-title">Aucune évaluation trouvée</h3>
-            <p class="empty-state-text">Les évaluations apparaîtront ici une fois créées</p>
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle alert-icon"></i>
+            <span>Aucune évaluation trouvée.</span>
         </div>
         {% endif %}
     </div>
 </div>
 
-<!-- Pagination -->
-{% if is_paginated %}
-    {% include 'gestion_cours/includes/pagination.html' %}
-{% endif %}
-{% endblock content %}
+<!-- Note explicative -->
+<div class="alert alert-light mt-4">
+    <h5><i class="fas fa-info-circle"></i> À propos des évaluations :</h5>
+    <ul class="mb-0">
+        <li>Les évaluations ne peuvent être créées que pour les cours ayant atteint 100% de progression</li>
+        <li>Une fois créée, <strong>une évaluation ne peut plus être modifiée</strong></li>
+        <li>Les 3 colonnes affichées sont : <strong>Résumé de l'Évaluation</strong>, <strong>Appréciation AP</strong>, et <strong>Recommandations</strong></li>
+        <li>Ces 3 colonnes sont également présentes dans les exports Excel et PDF</li>
+    </ul>
+</div>
+
+{% endblock %}

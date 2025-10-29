@@ -1,9 +1,7 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
 
-{% block title %}
-    {% if mode_edition %}Modification d'Évaluation{% else %}Nouvelle Évaluation{% endif %}
-{% endblock %}
+{% block title %}Nouvelle Évaluation{% endblock %}
 
 {% block content %}
 <div class="form-container">
@@ -11,16 +9,23 @@
         <div class="form-header">
             <h1 class="form-title">
                 <i class="fas fa-clipboard-check"></i>
-                {% if mode_edition %}
-                    Modification de l'Évaluation Qualitative
-                {% else %}
-                    Nouvelle Évaluation Qualitative
-                {% endif %}
+                Nouvelle Évaluation Qualitative
             </h1>
             <p class="form-subtitle">
                 Évaluation du cours : {{ matiere_prog.matiere.libelle }}
             </p>
         </div>
+
+        <!-- Messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' or message.tags == 'danger' %}exclamation-circle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %} alert-icon"></i>
+                    <span>{{ message }}</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
 
         <!-- Informations du cours -->
         <div class="alert alert-info">
@@ -28,77 +33,90 @@
                 <i class="fas fa-info-circle"></i>
             </div>
             <div>
-                <h4 class="mb-2"><strong>{{ matiere_prog.matiere.libelle }}</strong></h4>
-                <p class="mb-1"><strong>Professeur:</strong> {{ matiere_prog.professeur }}</p>
-                <p class="mb-0">
-                    <strong>Progression:</strong> 
-                    <span class="badge {% if progression >= 100 %}badge-success{% else %}badge-warning{% endif %}">
-                        {{ progression|floatformat:1 }}%
+                <h4 class="mb-2">
+                    <strong>{{ matiere_prog.matiere.libelle }}</strong>
+                    <span class="badge badge-success ms-2">
+                        <i class="fas fa-check-circle"></i> Cours complété à {{ progression|floatformat:1 }}%
                     </span>
-                </p>
+                </h4>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>Professeur:</strong> {{ matiere_prog.professeur }}</p>
+                        <p class="mb-1"><strong>Niveau:</strong> {{ matiere_prog.niveau.libelle }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>Filière:</strong> {{ matiere_prog.filiere.libelle }}</p>
+                        <p class="mb-1"><strong>Volume horaire:</strong> {{ matiere_prog.nbr_heure }}h</p>
+                    </div>
+                </div>
             </div>
         </div>
 
-        {% if progression < 100 %}
-            <!-- Erreur : cours non terminé -->
-            <div class="alert alert-danger">
-                <div class="alert-icon">
-                    <i class="fas fa-exclamation-circle"></i>
-                </div>
-                <div>
-                    <strong>Attention !</strong> Le cours doit être complété à 100% pour être évalué.
-                    <br>Progression actuelle : <strong>{{ progression|floatformat:1 }}%</strong>
-                </div>
+        <!-- Note importante -->
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle alert-icon"></i>
+            <div>
+                <strong>Important :</strong>
+                <p class="mb-0">Une fois l'évaluation enregistrée, <strong>elle ne pourra plus être modifiée</strong>. Veuillez remplir tous les champs avec attention.</p>
+            </div>
+        </div>
+
+        <!-- Formulaire d'évaluation (CORRECTION: 3 champs) -->
+        <form method="post" action="">
+            {% csrf_token %}
+            
+            <!-- Section 1 : Résumé de l'Évaluation du Cours -->
+            <div class="form-section">
+                <h3 class="form-section-title">
+                    <i class="fas fa-comment-dots"></i>
+                    1. Résumé de l'Évaluation du Cours
+                </h3>
+                <p class="text-muted">Décrivez le déroulement du cours, les points forts et les difficultés rencontrées.</p>
+                {{ form.resume_evaluation }}
+            </div>
+
+            <!-- Section 2 : Appréciation de l'Assistant Pédagogique -->
+            <div class="form-section">
+                <h3 class="form-section-title">
+                    <i class="fas fa-user-check"></i>
+                    2. Appréciation de l'Assistant Pédagogique (AP)
+                </h3>
+                <p class="text-muted">Votre appréciation personnelle sur la qualité du cours et l'implication du professeur.</p>
+                {{ form.appreciation_ap }}
+            </div>
+
+            <!-- Section 3 : Recommandations et Suggestions -->
+            <div class="form-section">
+                <h3 class="form-section-title">
+                    <i class="fas fa-lightbulb"></i>
+                    3. Recommandations et Suggestions
+                </h3>
+                <p class="text-muted">Proposez des améliorations pour les prochaines sessions de ce cours.</p>
+                {{ form.recommandations }}
             </div>
             
             <div class="form-actions">
-                <a href="{% url 'gestion_cours:home' %}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left me-2"></i>Retour au Tableau de Bord
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save me-2"></i>Enregistrer l'Évaluation (Définitif)
+                </button>
+                <a href="{% url 'gestion_cours:emargement_selection' %}" class="btn btn-secondary">
+                    <i class="fas fa-times me-2"></i>Annuler
                 </a>
             </div>
-        {% else %}
-            <!-- Formulaire d'évaluation -->
-            <form method="post" action="">
-                {% csrf_token %}
-                
-                <!-- Section 1 : Résumé de l'Évaluation -->
-                <div class="form-section">
-                    <h3 class="form-section-title">
-                        <i class="fas fa-file-alt"></i>
-                        Résumé de l'Évaluation
-                    </h3>
-                    {{ form.resume_evaluation|as_crispy_field }}
-                </div>
-                
-                <!-- Section 2 : Résumé des Acquis Pédagogiques -->
-                <div class="form-section">
-                    <h3 class="form-section-title">
-                        <i class="fas fa-graduation-cap"></i>
-                        Acquis Pédagogiques
-                    </h3>
-                    {{ form.resume_ap|as_crispy_field }}
-                </div>
-
-                <!-- Section 3 : Recommandations -->
-                <div class="form-section">
-                    <h3 class="form-section-title">
-                        <i class="fas fa-lightbulb"></i>
-                        Recommandations
-                    </h3>
-                    {{ form.recommandation|as_crispy_field }}
-                </div>
-                
-                <div class="form-actions">
-                    <a href="{% url 'gestion_cours:home' %}" class="btn btn-secondary">
-                        <i class="fas fa-times me-2"></i>Annuler
-                    </a>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save me-2"></i>
-                        {% if mode_edition %}Mettre à Jour{% else %}Enregistrer l'Évaluation{% endif %}
-                    </button>
-                </div>
-            </form>
-        {% endif %}
+        </form>
     </div>
 </div>
-{% endblock content %}
+
+<!-- Consignes -->
+<div class="alert alert-light mt-4">
+    <h5><i class="fas fa-info-circle"></i> Consignes :</h5>
+    <ul class="mb-0">
+        <li><strong>Résumé de l'Évaluation</strong> : Décrivez objectivement le contenu, la méthodologie, et les résultats du cours</li>
+        <li><strong>Appréciation AP</strong> : Donnez votre avis professionnel sur la qualité de l'enseignement</li>
+        <li><strong>Recommandations</strong> : Suggérez des axes d'amélioration concrets et réalistes</li>
+        <li>Tous les champs sont <strong>obligatoires</strong></li>
+        <li>Une fois enregistrée, l'évaluation devient <strong>définitive et non modifiable</strong></li>
+    </ul>
+</div>
+
+{% endblock %}

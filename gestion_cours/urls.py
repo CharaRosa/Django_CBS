@@ -62,4 +62,5 @@ urlpatterns = [
     # ------------------ Évaluations -------------------
     path('evaluations/', views.evaluation_list_view, name='evaluation_list'),
     path('evaluations/<int:pk>/', views.EvaluationManagementView.as_view(), name='evaluation_manage'),
+    
 ]

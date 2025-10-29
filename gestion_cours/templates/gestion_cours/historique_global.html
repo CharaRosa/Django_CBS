@@ -29,8 +29,11 @@
     <div class="alert-icon">
         <i class="fas fa-calendar-alt"></i>
     </div>
-    <span><strong>Année Académique Active:</strong> {{ annee_active }}</span>
+    <span><strong>Année Académique Active :</strong> {{ annee_active }}</span>
 </div>
+
+<!-- Messages -->
+{% include "gestion_cours/includes/messages.html" %}
 
 <!-- Filtres -->
 <div class="filter-card">
@@ -38,15 +41,21 @@
         <i class="fas fa-filter"></i>
         Filtrer les Émargements
     </div>
-    
     <form method="get" class="filter-form">
-        {% for field in filter.form %}
-        <div class="filter-group">
-            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-            {{ field }}
+        <div class="row">
+            <div class="col-md-3">
+                {{ filter.form.date_emar__gte }}
+            </div>
+            <div class="col-md-3">
+                {{ filter.form.date_emar__lte }}
+            </div>
+            <div class="col-md-3">
+                {{ filter.form.matiere_programmer__matiere }}
+            </div>
+            <div class="col-md-3">
+                {{ filter.form.matiere_programmer__professeur }}
+            </div>
         </div>
-        {% endfor %}
-        
         <div class="filter-actions">
             <button type="submit" class="btn btn-primary">
                 <i class="fas fa-search me-2"></i>Filtrer
@@ -58,8 +67,8 @@
     </form>
 </div>
 
-<!-- Tableau -->
-<div class="table-card">
+<!-- Table des émargements -->
+<div class="table-card mt-4">
     <div class="table-wrapper">
         {% if historique %}
         <table class="data-table">
@@ -68,36 +77,120 @@
                     <th>Date</th>
                     <th>Matière</th>
                     <th>Professeur</th>
-                    <th>Filière</th>
-                    <th>Niveau</th>
-                    <th>Semestre</th>
-                    <th class="text-center">Heures</th>
+                    <th>Filière/Niveau</th>
+                    <th class="text-center">Durée</th>
+                    <th>Émargé par</th>
                 </tr>
             </thead>
             <tbody>
-                {% for emarg in historique %}
+                {% for emargement in historique %}
                 <tr>
-                    <td>{{ emarg.date_emar|date:"d/m/Y" }}</td>
-                    <td>{{ emarg.matiere_programmer.matiere.libelle }}</td>
-                    <td>{{ emarg.matiere_programmer.professeur }}</td>
-                    <td>{{ emarg.matiere_programmer.filiere.code }}</td>
-                    <td>{{ emarg.matiere_programmer.niveau.libelle }} {{ emarg.matiere_programmer.niveau.niv }}</td>
-                    <td>{{ emarg.matiere_programmer.get_semestre_display }}</td>
-                    <td class="text-center col-number">
-                        <span class="badge badge-info">{{ emarg.heure_eff }}h</span>
+                    <td>
+                        <strong>{{ emargement.date_emar|date:"d/m/Y" }}</strong>
+                        <br>
+                        <small class="text-muted">{{ emargement.date_emar|date:"l" }}</small>
+                    </td>
+                    <td>
+                        <strong>{{ emargement.matiere_programmer.matiere.libelle }}</strong>
+                        <br>
+                        <small class="text-muted">{{ emargement.matiere_programmer.matiere.code }}</small>
+                    </td>
+                    <td>{{ emargement.matiere_programmer.professeur }}</td>
+                    <td>
+                        <span class="badge badge-info">
+                            {{ emargement.matiere_programmer.filiere.code }} - 
+                            {{ emargement.matiere_programmer.niveau.libelle }}
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <span class="badge badge-success">
+                            {{ emargement.heure_eff }}h
+                        </span>
+                    </td>
+                    <td>
+                        {% if emargement.emarge_par %}
+                            {{ emargement.emarge_par.get_full_name }}
+                        {% else %}
+                            <em class="text-muted">Système</em>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
+
+        <!-- CORRECTION: Pagination ajoutée -->
+        {% if is_paginated %}
+        <div class="pagination-wrapper">
+            <nav aria-label="Navigation de page">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Première">
+                                <span aria-hidden="true">&laquo;&laquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Précédent">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Suivant">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Dernière">
+                                <span aria-hidden="true">&raquo;&raquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            <p class="text-center text-muted mt-2">
+                Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }} 
+                ({{ page_obj.paginator.count }} émargement{{ page_obj.paginator.count|pluralize }} au total)
+            </p>
+        </div>
+        {% endif %}
+
         {% else %}
-        <!-- État vide -->
-        <div class="empty-state">
-            <i class="fas fa-inbox empty-state-icon"></i>
-            <h3 class="empty-state-title">Aucun émargement trouvé</h3>
-            <p class="empty-state-text">Essayez de modifier vos filtres</p>
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle alert-icon"></i>
+            <span>Aucun émargement trouvé pour les critères sélectionnés.</span>
         </div>
         {% endif %}
     </div>
 </div>
+
+<!-- Statistiques récapitulatives (si des résultats existent) -->
+{% if historique %}
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="alert alert-light">
+            <h5><i class="fas fa-chart-bar"></i> Résumé :</h5>
+            <ul class="mb-0">
+                <li>Total des émargements affichés : <strong>{{ page_obj.paginator.count }}</strong></li>
+                <li>Utilisez les filtres ci-dessus pour affiner votre recherche</li>
+                <li>Les exports Excel et PDF prennent en compte les filtres actifs</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 {% endblock %}
