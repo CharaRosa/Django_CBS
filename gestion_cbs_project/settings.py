@@ -179,3 +179,11 @@ STATICFILES_DIRS = [
 
 # (Optional, but good practice for production)
 STATIC_ROOT = BASE_DIR / "staticfiles"
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+EMAIL_HOST_USER = 'cbsgestioncours@gmail.com'
+EMAIL_HOST_PASSWORD = 'xnox dkqs upwq aung'  # Voir instructions ci-dessous
+DEFAULT_FROM_EMAIL = 'CBS Business School <cbsgestioncours@gmail.com>'

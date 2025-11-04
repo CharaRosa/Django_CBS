@@ -10,6 +10,16 @@
         Gestion des Niveaux
     </h1>
     <div class="page-actions">
+        <div class="export-buttons">
+            <a href="?{% for key, value in request.GET.items %}{% if key != 'export' %}{{ key }}={{ value }}&{% endif %}{% endfor %}export=excel" 
+               class="btn-export btn-export-excel">
+                <i class="fas fa-file-excel me-2"></i>Excel
+            </a>
+            <a href="?{% for key, value in request.GET.items %}{% if key != 'export' %}{{ key }}={{ value }}&{% endif %}{% endfor %}export=pdf" 
+               class="btn-export btn-export-pdf">
+                <i class="fas fa-file-pdf me-2"></i>PDF
+            </a>
+        </div>
         <a href="{% url 'gestion_cours:niveau_create' %}" class="btn btn-primary">
             <i class="fas fa-plus me-2"></i>Ajouter un Niveau
         </a>
@@ -18,6 +28,40 @@
 
 {% include "gestion_cours/includes/messages.html" %}
 
+<!-- Filtres responsive -->
+<div class="filter-card">
+    <div class="filter-header">
+        <i class="fas fa-search"></i>
+        Rechercher un Niveau
+    </div>
+    <form method="get" class="filter-form">
+        <div class="row g-3">
+            <div class="col-lg-3 col-md-4 col-12">
+                <label class="form-label">Libellé</label>
+                {{ filter.form.libelle }}
+            </div>
+            <div class="col-lg-3 col-md-4 col-12">
+                <label class="form-label">Niveau (L1, L2, M1...)</label>
+                {{ filter.form.niv }}
+            </div>
+            <div class="col-lg-4 col-md-4 col-12">
+                <label class="form-label">Filière</label>
+                {{ filter.form.filiere }}
+            </div>
+            <div class="col-lg-2 col-12 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search me-2"></i>Rechercher
+                </button>
+            </div>
+        </div>
+        <div class="mt-3">
+            <a href="{% url 'gestion_cours:niveau_list' %}" class="btn btn-sm btn-secondary">
+                <i class="fas fa-redo me-2"></i>Réinitialiser
+            </a>
+        </div>
+    </form>
+</div>
+
 <div class="table-card">
     <div class="table-wrapper">
         {% if object_list %}
@@ -25,7 +69,8 @@
             <thead>
                 <tr>
                     <th data-sortable>Niveau</th>
-                    <th data-sortable>Filière Associée</th>
+                    <th data-sortable>Libellé</th>
+                    <th data-sortable>Filière</th>
                     <th data-sortable>Code Filière</th>
                     <th class="col-actions">Actions</th>
                 </tr>
@@ -33,22 +78,20 @@
             <tbody>
                 {% for niveau in object_list %}
                 <tr>
-                    <td class="font-medium">{{ niveau.libelle }} {{ niveau.niv }}</td>
+                    <td><span class="badge badge-success">{{ niveau.niv }}</span></td>
+                    <td>{{ niveau.libelle }}</td>
                     <td>{{ niveau.filiere.libelle }}</td>
+                    <td><span class="badge badge-info">{{ niveau.filiere.code }}</span></td>
                     <td>
-                        <span class="badge badge-info">{{ niveau.filiere.code }}</span>
-                    </td>
-                    <td class="col-actions">
                         <div class="action-buttons">
-                            <a href="{% url 'gestion_cours:niveau_update' pk=niveau.pk %}" 
-                               class="action-btn action-btn-edit" 
+                            <a href="{% url 'gestion_cours:niveau_update' niveau.pk %}" 
+                               class="btn-action btn-action-edit" 
                                title="Modifier">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <a href="{% url 'gestion_cours:niveau_delete' pk=niveau.pk %}" 
-                               class="action-btn action-btn-delete" 
-                               title="Supprimer"
-                               data-confirm="Voulez-vous vraiment supprimer ce niveau ?">
+                            <a href="{% url 'gestion_cours:niveau_delete' niveau.pk %}" 
+                               class="btn-action btn-action-delete" 
+                               title="Supprimer">
                                 <i class="fas fa-trash"></i>
                             </a>
                         </div>
@@ -57,20 +100,184 @@
                 {% endfor %}
             </tbody>
         </table>
+
+        {% if is_paginated %}
+        {% include 'gestion_cours/includes/pagination.html' %}
+        {% endif %}
+        
         {% else %}
         <div class="empty-state">
-            <i class="fas fa-layer-group empty-state-icon"></i>
-            <h3 class="empty-state-title">Aucun niveau défini</h3>
-            <p class="empty-state-text">Commencez par ajouter le premier niveau</p>
-            <a href="{% url 'gestion_cours:niveau_create' %}" class="empty-state-action">
-                <i class="fas fa-plus me-2"></i>Ajouter un Niveau
+            <i class="fas fa-layer-group fa-3x text-muted mb-3"></i>
+            <p class="text-muted">Aucun niveau trouvé.</p>
+            <a href="{% url 'gestion_cours:niveau_create' %}" class="btn btn-primary mt-2">
+                <i class="fas fa-plus me-2"></i>Ajouter le premier niveau
             </a>
         </div>
         {% endif %}
     </div>
 </div>
 
-{% if is_paginated %}
-    {% include 'gestion_cours/includes/pagination.html' %}
-{% endif %}
+<style>
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.page-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.export-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-export {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-export-excel {
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    color: white;
+}
+
+.btn-export-excel:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+}
+
+.btn-export-pdf {
+    background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+    color: white;
+}
+
+.btn-export-pdf:hover {
+    background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+}
+
+.filter-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.filter-header {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #1E293B;
+}
+
+.badge-success {
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    color: white;
+    padding: 0.5rem 1rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border-radius: 6px;
+}
+
+.badge-info {
+    background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+    color: white;
+    padding: 0.5rem 1rem;
+    font-weight: 600;
+    font-size: 0.85rem;
+    border-radius: 6px;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    font-size: 0.95rem;
+}
+
+.btn-action-edit {
+    background-color: #ffc107;
+    color: white;
+}
+
+.btn-action-edit:hover {
+    background-color: #e0a800;
+    transform: scale(1.1);
+    box-shadow: 0 3px 8px rgba(255, 193, 7, 0.4);
+}
+
+.btn-action-delete {
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn-action-delete:hover {
+    background-color: #c82333;
+    transform: scale(1.1);
+    box-shadow: 0 3px 8px rgba(220, 53, 69, 0.4);
+}
+
+.empty-state {
+    padding: 3rem;
+    text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .page-actions {
+        width: 100%;
+        flex-direction: column;
+    }
+    
+    .export-buttons {
+        width: 100%;
+    }
+    
+    .btn-export {
+        flex: 1;
+        justify-content: center;
+    }
+    
+    .table-wrapper {
+        overflow-x: auto;
+    }
+}
+</style>
 {% endblock %}

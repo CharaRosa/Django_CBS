@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Alertes de Retard{% endblock %}
+
+{% block content %}
+<!-- En-tête de page -->
+<div class="page-header">
+    <h1 class="page-title">
+        <i class="fas fa-exclamation-triangle"></i>
+        Alertes de Retard - Cours
+    </h1>
+    <div class="page-actions">
+        {% if cours_en_alerte %}
+        <form method="post" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">
+                <i class="fas fa-paper-plane me-2"></i>Envoyer les Alertes Email
+            </button>
+        </form>
+        {% endif %}
+        <a href="{% url 'gestion_cours:home' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Retour
+        </a>
+    </div>
+</div>
+
+<!-- Info année académique -->
+<div class="alert alert-info">
+    <div class="alert-icon">
+        <i class="fas fa-calendar-alt"></i>
+    </div>
+    <span><strong>Année Académique Active :</strong> {{ annee_active }}</span>
+</div>
+
+<!-- Messages -->
+{% include "gestion_cours/includes/messages.html" %}
+
+<!-- Critères d'alerte -->
+<div class="alert alert-warning">
+    <h5><i class="fas fa-info-circle"></i> Critères d'alerte automatique :</h5>
+    <ul class="mb-0">
+        <li>Progression du cours: <strong>≥ 75%</strong> et <strong>&lt; 100%</strong></li>
+        <li>Jours restants avant date de fin estimée: <strong>&lt; 7 jours</strong></li>
+        <li>Destinataires des emails: <strong>Professeur du cours + Administrateurs pédagogiques</strong></li>
+    </ul>
+</div>
+
+<!-- Statistiques -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="stat-card {% if nb_alertes > 0 %}border-danger{% else %}border-success{% endif %}">
+            <div class="stat-icon {% if nb_alertes > 0 %}bg-danger{% else %}bg-success{% endif %}">
+                <i class="fas fa-bell"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">{{ nb_alertes }}</div>
+                <div class="stat-label">Cours en Alerte</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Table des cours en alerte -->
+<div class="table-card">
+    <div class="table-header">
+        <h3>
+            <i class="fas fa-list"></i>
+            {% if cours_en_alerte %}
+                Cours Nécessitant une Attention Immédiate
+            {% else %}
+                Aucun Cours en Alerte
+            {% endif %}
+        </h3>
+    </div>
+    
+    <div class="table-wrapper">
+        {% if cours_en_alerte %}
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Matière</th>
+                    <th>Professeur</th>
+                    <th>Niveau</th>
+                    <th class="text-center">Progression</th>
+                    <th class="text-center">Heures Faites</th>
+                    <th class="text-center">Heures Restantes</th>
+                    <th class="text-center">⏰ Jours Restants</th>
+                    <th class="col-actions">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for alerte in cours_en_alerte %}
+                <tr class="alerte-row">
+                    <td>
+                        <strong>{{ alerte.cours.matiere.libelle }}</strong>
+                        <br>
+                        <small class="text-muted">{{ alerte.cours.matiere.code }}</small>
+                    </td>
+                    <td>
+                        {{ alerte.cours.professeur.nom }} {{ alerte.cours.professeur.prenoms }}
+                        <br>
+                        <small class="text-muted">
+                            <i class="fas fa-envelope"></i> {{ alerte.cours.professeur.email }}
+                        </small>
+                    </td>
+                    <td>
+                        <span class="badge badge-info">
+                            {{ alerte.cours.filiere.code }} - {{ alerte.cours.niveau.libelle }}
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <div class="progress" style="height: 25px;">
+                            <div class="progress-bar bg-warning" 
+                                 role="progressbar" 
+                                 style="width: {{ alerte.progression }}%;"
+                                 aria-valuenow="{{ alerte.progression }}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                                {{ alerte.progression|floatformat:1 }}%
+                            </div>
+                        </div>
+                    </td>
+                    <td class="text-center">
+                        <strong>{{ alerte.heures_faites|floatformat:1 }}h</strong> / {{ alerte.cours.nbr_heure }}h
+                    </td>
+                    <td class="text-center">
+                        <span class="badge badge-danger">
+                            {{ alerte.heures_restantes|floatformat:1 }}h
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <span class="badge {% if alerte.jours_restants <= 3 %}badge-danger{% elif alerte.jours_restants <= 5 %}badge-warning{% else %}badge-info{% endif %}">
+                            <i class="fas fa-clock"></i> {{ alerte.jours_restants }} jour{{ alerte.jours_restants|pluralize }}
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <a href="{% url 'gestion_cours:historique_cours' alerte.cours.pk %}" 
+                           class="btn btn-sm btn-info"
+                           title="Voir l'historique">
+                            <i class="fas fa-history"></i> Historique
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+            <h4 class="text-success">Excellent !</h4>
+            <p class="text-muted">Aucun cours en retard détecté pour le moment.</p>
+            <p class="text-muted">Tous les cours respectent les délais prévus.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Informations complémentaires -->
+{% if cours_en_alerte %}
+<div class="alert alert-light mt-4">
+    <h5><i class="fas fa-info-circle"></i> À propos des alertes :</h5>
+    <ul class="mb-0">
+        <li>Les emails seront envoyés au professeur concerné et à tous les administrateurs pédagogiques</li>
+        <li>Chaque email contient les détails du cours et les actions recommandées</li>
+        <li>Vous pouvez déclencher l'envoi manuellement avec le bouton "Envoyer les Alertes Email"</li>
+        <li>Pour automatiser, configurez une tâche CRON (voir documentation)</li>
+    </ul>
+</div>
+{% endif %}
+
+<style>
+.alerte-row {
+    background-color: #fff3cd;
+    border-left: 4px solid #ff9800;
+}
+
+.alerte-row:hover {
+    background-color: #ffe69c;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 10px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    border-left: 4px solid;
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    color: white;
+}
+
+.stat-content {
+    flex: 1;
+}
+
+.stat-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.stat-label {
+    color: #6c757d;
+    font-size: 1rem;
+    margin-top: 0.5rem;
+}
+
+.badge-danger {
+    background-color: #dc3545;
+    color: white;
+    padding: 0.4rem 0.6rem;
+    font-weight: 600;
+}
+
+.badge-warning {
+    background-color: #ffc107;
+    color: #000;
+    padding: 0.4rem 0.6rem;
+    font-weight: 600;
+}
+
+.badge-info {
+    background-color: #17a2b8;
+    color: white;
+    padding: 0.4rem 0.6rem;
+    font-weight: 600;
+}
+
+.empty-state {
+    padding: 3rem;
+    text-align: center;
+}
+</style>
+
+{% endblock %}

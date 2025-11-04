@@ -1,3 +1,10 @@
+# gestion_cours/forms.py - VERSION CORRIGÉE
+"""
+CORRECTIONS APPORTÉES:
+1. ✅ Champs textarea EvaluationForm rendus saisissables (ajout d'attrs appropriés)
+2. ✅ Widgets avec classes CSS pour compatibilité Crispy Forms/Bootstrap
+"""
+
 from django import forms
 from .models import Matiere, Professeur, Emargement, Evaluation, MatiereProgrammee, AnneeAcademique
 from django.forms.widgets import DateInput, Textarea, NumberInput
@@ -61,29 +68,31 @@ class MatiereProgrammeeForm(BaseCrispyModelForm):
 # ----------------------------------------------------------------------
 class EmargementForm(forms.ModelForm):
     
-    # !!! SUPPRESSION des définitions explicites de champs pour utiliser Meta/widgets !!!
-    # Exemples de champs retirés : date_seance, theme_chapitre_aborde, heure_debut, heure_fin, contenu_seance
-    
     class Meta:
         model = Emargement
-        # Utiliser les noms de champs exacts du modèle
         fields = ['date_emar', 'heure_eff'] 
         
-        # Appliquer les widgets et les attributs dans Meta
         widgets = {
-            # Ces noms de clés DOIVENT correspondre aux champs du modèle
-            'date_emar': DateInput(attrs={'type': 'date'}),
-            'heure_eff': NumberInput(attrs={'step': '0.5', 'placeholder': 'Ex: 2.0 ou 1.5', 'min': '0.5', 'max': '8.0'})
+            'date_emar': DateInput(attrs={
+                'type': 'date',
+                'class': 'form-control'
+            }),
+            'heure_eff': NumberInput(attrs={
+                'step': '0.5', 
+                'placeholder': 'Ex: 2.0 ou 1.5', 
+                'min': '0.5', 
+                'max': '8.0',
+                'class': 'form-control'
+            })
         }
         
-        # Optionnel: Définir les libellés (labels) si nécessaire
         labels = {
             'date_emar': 'Date de la séance',
             'heure_eff': 'Durée de la séance (en heures décimales)',
         }
         
 # ----------------------------------------------------------------------
-# 4. Formulaire d'Évaluation - (LAISSÉ INCHANGÉ)
+# 4. Formulaire d'Évaluation - 🆕 CORRIGÉ AVEC TEXTAREAS SAISISSABLES
 # ----------------------------------------------------------------------
 class EvaluationForm(BaseCrispyModelForm): 
     class Meta:
@@ -91,8 +100,25 @@ class EvaluationForm(BaseCrispyModelForm):
         fields = ['resume_evaluation', 'resume_ap', 'recommandation'] 
         
         widgets = {
-            'resume_evaluation': Textarea(attrs={'rows': 4}),
-            'resume_ap': Textarea(attrs={'rows': 4}),
-            'recommandation': Textarea(attrs={'rows': 4}),
-            
+            'resume_evaluation': Textarea(attrs={
+                'rows': 5,
+                'class': 'form-control',
+                'placeholder': 'Décrivez le déroulement du cours, les points forts et les difficultés rencontrées...'
+            }),
+            'resume_ap': Textarea(attrs={
+                'rows': 5,
+                'class': 'form-control',
+                'placeholder': 'Votre appréciation personnelle sur la qualité du cours et l\'implication du professeur...'
+            }),
+            'recommandation': Textarea(attrs={
+                'rows': 5,
+                'class': 'form-control',
+                'placeholder': 'Proposez des améliorations pour les prochaines sessions de ce cours...'
+            }),
+        }
+        
+        labels = {
+            'resume_evaluation': 'Résumé de l\'Évaluation du Cours',
+            'resume_ap': 'Appréciation de l\'Assistant Pédagogique (AP)',
+            'recommandation': 'Recommandations et Suggestions',
         }

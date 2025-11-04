@@ -41,6 +41,7 @@ def setup_pdf_styles():
     """Configure les styles pour les PDF (incluant la police pour les accents)."""
     try:
         # Tenter d'enregistrer une police supportant les accents
+        # NOTE: Le chemin de la police peut nécessiter des ajustements selon le système
         pdfmetrics.registerFont(TTFont('DejaVu', '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'))
         font_name = 'DejaVu'
     except:
@@ -76,7 +77,7 @@ def export_professeurs_to_excel(professeurs_list):
         cell.value = header
         cell.fill = styles['header_fill']
         cell.font = styles['header_font']
-        cell.alignment = styles['header_alignment'] # Mise à jour
+        cell.alignment = styles['header_alignment']
         cell.border = styles['border']
     
     # Données
@@ -174,7 +175,7 @@ def export_cours_to_excel(cours_list):
         cell.value = header
         cell.fill = styles['header_fill']
         cell.font = styles['header_font']
-        cell.alignment = styles['header_alignment'] # Mise à jour
+        cell.alignment = styles['header_alignment']
         cell.border = styles['border']
     
     # Données
@@ -275,7 +276,7 @@ def export_emargements_to_excel(emargements_list):
         cell.value = header
         cell.fill = styles['header_fill']
         cell.font = styles['header_font']
-        cell.alignment = styles['header_alignment'] # Mise à jour
+        cell.alignment = styles['header_alignment']
         cell.border = styles['border']
     
     for row_num, emarg in enumerate(emargements_list, 2):
@@ -378,8 +379,8 @@ def export_evaluations_to_excel(queryset):
         'Niveau', 
         'Filière',
         'Résumé de l\'Évaluation',
-        'Appréciation AP', # Le libellé reste le même pour l'utilisateur
-        'Recommandations',  # Le libellé reste le même pour l'utilisateur
+        'Appréciation AP',
+        'Recommandations',
         'Évalué par'
     ]
     
@@ -393,7 +394,7 @@ def export_evaluations_to_excel(queryset):
         cell.alignment = styles['header_alignment'] 
         cell.border = styles['border']
 
-    # Données (Utilisation des champs réels du modèle : resume_ap et recommandation)
+    # Données
     for eval_obj in queryset:
         ws.append([
             eval_obj.matiere_programmer.matiere.libelle,
@@ -402,9 +403,7 @@ def export_evaluations_to_excel(queryset):
             f"{eval_obj.matiere_programmer.niveau.libelle} {eval_obj.matiere_programmer.niveau.niv}", 
             eval_obj.matiere_programmer.filiere.code, 
             eval_obj.resume_evaluation or 'Non renseigné',
-            # CORRIGÉ : utilise resume_ap au lieu de appreciation_ap
             eval_obj.resume_ap or 'Non renseigné',
-            # CORRIGÉ : utilise recommandation (singulier) au lieu de recommandations
             eval_obj.recommandation or 'Non renseigné',
             eval_obj.utilisateur_evaluation.get_full_name() if eval_obj.utilisateur_evaluation and hasattr(eval_obj.utilisateur_evaluation, 'get_full_name') else (eval_obj.utilisateur_evaluation.username if eval_obj.utilisateur_evaluation else 'Système')
         ])
@@ -447,12 +446,12 @@ def export_evaluations_to_pdf(queryset):
     # Utiliser les styles configurés (avec gestion de la police)
     styles, font_name = setup_pdf_styles()
     
-    # Titre (utilise le style CustomTitle défini dans setup_pdf_styles)
+    # Titre 
     title_style = styles['CustomTitle']
     elements.append(Paragraph("Liste des Évaluations Qualitatives", title_style))
     elements.append(Spacer(1, 0.5*cm))
 
-    # Info génération (doit utiliser la bonne police)
+    # Info génération
     date_style = ParagraphStyle(
         'DateStyle',
         parent=styles['Normal'],
@@ -467,10 +466,10 @@ def export_evaluations_to_pdf(queryset):
     ))
     elements.append(Spacer(1, 0.5*cm))
 
-    # Données du tableau (CORRECTION: 3 colonnes d'évaluation)
+    # Données du tableau
     data = [['Cours', 'Professeur', 'Résumé\nÉvaluation', 'Appréciation\nAP', 'Recommandations', 'Évalué par']]
     
-    # Définir un style 'TableNormal' pour les cellules de données (avec gestion de la police)
+    # Style pour les cellules de données
     table_normal_style = ParagraphStyle(
         'TableNormal',
         parent=styles['Normal'],
@@ -484,10 +483,8 @@ def export_evaluations_to_pdf(queryset):
         # Tronquer les textes longs pour le PDF
         resume = eval_obj.resume_evaluation[:100] + '...' if eval_obj.resume_evaluation and len(eval_obj.resume_evaluation) > 100 else (eval_obj.resume_evaluation or 'N/A')
         
-        # CORRIGÉ : utilise resume_ap au lieu de appreciation_ap
         appreciation = eval_obj.resume_ap[:100] + '...' if eval_obj.resume_ap and len(eval_obj.resume_ap) > 100 else (eval_obj.resume_ap or 'N/A')
         
-        # CORRIGÉ : utilise recommandation (singulier)
         recommandations_txt = eval_obj.recommandation[:100] + '...' if eval_obj.recommandation and len(eval_obj.recommandation) > 100 else (eval_obj.recommandation or 'N/A')
         
         # Gestion du nom de l'évaluateur
@@ -498,7 +495,7 @@ def export_evaluations_to_pdf(queryset):
             Paragraph(str(eval_obj.matiere_programmer.professeur), table_normal_style),
             Paragraph(resume, table_normal_style),
             Paragraph(appreciation, table_normal_style),
-            Paragraph(recommandations_txt, table_normal_style), # Utilise la variable corrigée
+            Paragraph(recommandations_txt, table_normal_style),
             Paragraph(eval_par, table_normal_style)
         ])
 
@@ -544,4 +541,271 @@ def export_evaluations_to_pdf(queryset):
     ))
 
     doc.build(elements)
+    return response
+
+
+# ======================== EXPORT MATIÈRES ========================
+# 🆕 Fonctions ajoutées ici
+def export_matieres_to_excel(matieres_list):
+    """Exporte la liste des matières vers Excel."""
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Matières"
+    
+    # Utiliser les styles communs 
+    styles = get_excel_styles()
+    
+    # En-tête
+    headers = ['Code', 'Libellé']
+    for col_num, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col_num)
+        cell.value = header
+        cell.fill = styles['header_fill']
+        cell.font = styles['header_font']
+        cell.alignment = styles['header_alignment']
+        cell.border = styles['border']
+    
+    # Données
+    for row_num, matiere in enumerate(matieres_list, 2):
+        ws.cell(row=row_num, column=1).value = matiere.code
+        ws.cell(row=row_num, column=2).value = matiere.libelle
+        
+        for col in range(1, 3):
+            ws.cell(row=row_num, column=col).border = styles['border']
+    
+    # Ajuster les largeurs
+    ws.column_dimensions[get_column_letter(1)].width = 20
+    ws.column_dimensions[get_column_letter(2)].width = 40
+    
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    filename = f"Matieres_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+    response['Content-Disposition'] = f'attachment; filename={filename}'
+    
+    wb.save(response)
+    return response
+
+
+def export_matieres_to_pdf(matieres_list):
+    """Exporte la liste des matières vers PDF."""
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
+    elements = []
+    
+    # Utiliser les styles communs
+    styles, font_name = setup_pdf_styles()
+    
+    # Titre
+    title = Paragraph(f"Liste des Matières - {datetime.now().strftime('%d/%m/%Y')}", styles['CustomTitle'])
+    elements.append(title)
+    elements.append(Spacer(1, 0.5*cm))
+    
+    # Données du tableau
+    data = [['Code', 'Libellé']]
+    
+    for matiere in matieres_list:
+        data.append([
+            matiere.code,
+            matiere.libelle
+        ])
+    
+    # Créer le tableau
+    table = Table(data, colWidths=[4*cm, 12*cm])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#F59E0B')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 11),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ('FONTSIZE', (0, 1), (-1, -1), 9),
+        ('FONTNAME', (0, 1), (-1, -1), font_name),
+    ]))
+    
+    elements.append(table)
+    doc.build(elements)
+    
+    buffer.seek(0)
+    response = HttpResponse(buffer, content_type='application/pdf')
+    filename = f"Matieres_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+    response['Content-Disposition'] = f'attachment; filename={filename}'
+    
+    return response
+
+
+# ======================== EXPORT FILIÈRES ========================
+
+def export_filieres_to_excel(filieres_list):
+    """Exporte la liste des filières vers Excel."""
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Filières"
+    
+    styles = get_excel_styles()
+    
+    # En-tête
+    headers = ['Code', 'Libellé']
+    for col_num, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col_num)
+        cell.value = header
+        cell.fill = styles['header_fill']
+        cell.font = styles['header_font']
+        cell.alignment = styles['header_alignment']
+        cell.border = styles['border']
+    
+    # Données
+    for row_num, filiere in enumerate(filieres_list, 2):
+        ws.cell(row=row_num, column=1).value = filiere.code
+        ws.cell(row=row_num, column=2).value = filiere.libelle
+        
+        for col in range(1, 3):
+            ws.cell(row=row_num, column=col).border = styles['border']
+    
+    # Ajuster les largeurs
+    ws.column_dimensions[get_column_letter(1)].width = 15
+    ws.column_dimensions[get_column_letter(2)].width = 40
+    
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    filename = f"Filieres_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+    response['Content-Disposition'] = f'attachment; filename={filename}'
+    
+    wb.save(response)
+    return response
+
+
+def export_filieres_to_pdf(filieres_list):
+    """Exporte la liste des filières vers PDF."""
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
+    elements = []
+    
+    styles, font_name = setup_pdf_styles()
+    
+    title = Paragraph(f"Liste des Filières - {datetime.now().strftime('%d/%m/%Y')}", styles['CustomTitle'])
+    elements.append(title)
+    elements.append(Spacer(1, 0.5*cm))
+    
+    data = [['Code', 'Libellé']]
+    
+    for filiere in filieres_list:
+        data.append([
+            filiere.code,
+            filiere.libelle
+        ])
+    
+    table = Table(data, colWidths=[3*cm, 12*cm])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#F59E0B')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 11),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ('FONTSIZE', (0, 1), (-1, -1), 9),
+        ('FONTNAME', (0, 1), (-1, -1), font_name),
+    ]))
+    
+    elements.append(table)
+    doc.build(elements)
+    
+    buffer.seek(0)
+    response = HttpResponse(buffer, content_type='application/pdf')
+    filename = f"Filieres_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+    response['Content-Disposition'] = f'attachment; filename={filename}'
+    
+    return response
+
+
+# ======================== EXPORT NIVEAUX ========================
+
+def export_niveaux_to_excel(niveaux_list):
+    """Exporte la liste des niveaux vers Excel."""
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Niveaux"
+    
+    styles = get_excel_styles()
+    
+    # En-tête
+    headers = ['Niveau', 'Libellé', 'Filière', 'Code Filière']
+    for col_num, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col_num)
+        cell.value = header
+        cell.fill = styles['header_fill']
+        cell.font = styles['header_font']
+        cell.alignment = styles['header_alignment']
+        cell.border = styles['border']
+    
+    # Données
+    for row_num, niveau in enumerate(niveaux_list, 2):
+        ws.cell(row=row_num, column=1).value = niveau.niv
+        ws.cell(row=row_num, column=2).value = niveau.libelle
+        ws.cell(row=row_num, column=3).value = niveau.filiere.libelle
+        ws.cell(row=row_num, column=4).value = niveau.filiere.code
+        
+        for col in range(1, 5):
+            ws.cell(row=row_num, column=col).border = styles['border']
+    
+    # Ajuster les largeurs
+    for col in range(1, 5):
+        ws.column_dimensions[get_column_letter(col)].width = 20
+    
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    filename = f"Niveaux_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+    response['Content-Disposition'] = f'attachment; filename={filename}'
+    
+    wb.save(response)
+    return response
+
+
+def export_niveaux_to_pdf(niveaux_list):
+    """Exporte la liste des niveaux vers PDF."""
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
+    elements = []
+    
+    styles, font_name = setup_pdf_styles()
+    
+    title = Paragraph(f"Liste des Niveaux - {datetime.now().strftime('%d/%m/%Y')}", styles['CustomTitle'])
+    elements.append(title)
+    elements.append(Spacer(1, 0.5*cm))
+    
+    data = [['Niveau', 'Libellé', 'Filière', 'Code']]
+    
+    for niveau in niveaux_list:
+        data.append([
+            niveau.niv,
+            niveau.libelle,
+            niveau.filiere.libelle,
+            niveau.filiere.code
+        ])
+    
+    table = Table(data, colWidths=[3*cm, 5*cm, 5*cm, 3*cm])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#F59E0B')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 11),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ('FONTSIZE', (0, 1), (-1, -1), 9),
+        ('FONTNAME', (0, 1), (-1, -1), font_name),
+    ]))
+    
+    elements.append(table)
+    doc.build(elements)
+    
+    buffer.seek(0)
+    response = HttpResponse(buffer, content_type='application/pdf')
+    filename = f"Niveaux_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+    response['Content-Disposition'] = f'attachment; filename={filename}'
+    
     return response

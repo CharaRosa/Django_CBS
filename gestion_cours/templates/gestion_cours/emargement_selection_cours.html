@@ -13,25 +13,35 @@
     <p class="text-muted">Sélectionnez un cours pour enregistrer une séance d'émargement</p>
 </div>
 
-<!-- Messages -->
 {% include "gestion_cours/includes/messages.html" %}
 
-<!-- Filtres -->
+<!-- Filtres responsive améliorés -->
 <div class="filter-card">
     <div class="filter-header">
         <i class="fas fa-filter"></i>
         Filtrer les Cours
     </div>
     <form method="get" class="filter-form">
-        <div class="row">
-            <div class="col-md-4">
+        <div class="row g-3">
+            <div class="col-lg-3 col-md-4 col-12">
+                <label for="{{ filter.form.matiere.id_for_label }}" class="form-label">Matière</label>
                 {{ filter.form.matiere }}
             </div>
-            <div class="col-md-4">
+            <div class="col-lg-3 col-md-4 col-12">
+                <label for="{{ filter.form.professeur.id_for_label }}" class="form-label">Professeur</label>
                 {{ filter.form.professeur }}
             </div>
-            <div class="col-md-4">
+            <div class="col-lg-2 col-md-4 col-12">
+                <label for="{{ filter.form.filiere.id_for_label }}" class="form-label">Filière</label>
                 {{ filter.form.filiere }}
+            </div>
+            <div class="col-lg-2 col-md-4 col-12">
+                <label for="{{ filter.form.niveau.id_for_label }}" class="form-label">Niveau</label>
+                {{ filter.form.niveau }}
+            </div>
+            <div class="col-lg-2 col-md-4 col-12">
+                <label for="{{ filter.form.semestre.id_for_label }}" class="form-label">Semestre</label>
+                {{ filter.form.semestre }}
             </div>
         </div>
         <div class="filter-actions">
@@ -49,88 +59,104 @@
 <div class="table-card mt-4">
     <div class="table-wrapper">
         {% if cours_list %}
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Matière</th>
-                    <th>Professeur</th>
-                    <th>Filière/Niveau</th>
-                    <th class="text-center">Volume</th>
-                    <th class="text-center">Progression</th>
-                    <th class="text-center col-actions">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for cours in cours_list %}
-                <tr>
-                    <td>
-                        <strong>{{ cours.matiere.libelle }}</strong>
-                        <br>
-                        <small class="text-muted">{{ cours.matiere.code }}</small>
-                    </td>
-                    <td>{{ cours.professeur.nom }} {{ cours.professeur.prenoms }}</td>
-                    <td>
-                        <span class="badge badge-info">
-                            {{ cours.filiere.code }} - {{ cours.niveau.libelle }}
-                        </span>
-                    </td>
-                    <td class="text-center">
-                        <strong>{{ cours.total_heures_faites|default:0 }}h</strong> / {{ cours.nbr_heure }}h
-                    </td>
-                    <td class="text-center">
-                        <div class="progress" style="height: 25px;">
-                            <div class="progress-bar 
-                                {% if cours.progression_reelle >= 100 %}bg-success
-                                {% elif cours.progression_reelle >= 75 %}bg-info
-                                {% elif cours.progression_reelle >= 50 %}bg-warning
-                                {% else %}bg-danger
-                                {% endif %}" role="progressbar" style="width: {{ cours.progression_reelle }}%;"
-                                aria-valuenow="{{ cours.progression_reelle }}" aria-valuemin="0" aria-valuemax="100">
-                                {{ cours.progression_reelle|floatformat:1 }}%
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Matière</th>
+                        <th>Professeur</th>
+                        <th>Filière</th>
+                        <th>Niveau</th>
+                        <th class="text-center">Semestre</th>
+                        <th class="text-center">Volume</th>
+                        <th class="text-center">Progression</th>
+                        <th class="col-actions-wide">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cours in cours_list %}
+                    <tr>
+                        <td>
+                            <div class="matiere-cell">
+                                <strong>{{ cours.matiere.libelle }}</strong>
+                                <small class="text-muted d-block">{{ cours.matiere.code }}</small>
                             </div>
-                        </div>
-                    </td>
-                    <td class="text-center">
-                        <div class="btn-group" role="group">
-                            <!-- CORRECTION: Bouton Émarger (désactivé si 100%) -->
-                            {% if cours.progression_reelle < 100 %} <a
-                                href="{% url 'gestion_cours:emargement' cours.pk %}" class="btn btn-sm btn-primary"
-                                title="Faire l'émargement">
-                                <i class="fas fa-signature"></i> Émarger
+                        </td>
+                        <td>{{ cours.professeur.nom }} {{ cours.professeur.prenoms }}</td>
+                        <td>
+                            <span class="badge badge-info">{{ cours.filiere.code }}</span>
+                        </td>
+                        <td>
+                            <span class="badge badge-secondary">
+                                {{ cours.niveau.libelle }} {{ cours.niveau.niv }}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge badge-primary">
+                                {{ cours.get_semestre_display }}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <strong>{{ cours.total_heures_faites|default:0 }}h</strong> / {{ cours.nbr_heure }}h
+                        </td>
+                        <td class="text-center">
+                            <div class="progress" style="height: 28px; border-radius: 8px;">
+                                <div class="progress-bar 
+                                    {% if cours.progression_reelle >= 100 %}bg-success 
+                                    {% elif cours.progression_reelle >= 75 %}bg-info 
+                                    {% elif cours.progression_reelle >= 50 %}bg-warning 
+                                    {% else %}bg-danger{% endif %}" 
+                                    role="progressbar" 
+                                    style="width: {{ cours.progression_reelle }}%;" 
+                                    aria-valuenow="{{ cours.progression_reelle }}" 
+                                    aria-valuemin="0" 
+                                    aria-valuemax="100">
+                                    <strong>{{ cours.progression_reelle|floatformat:1 }}%</strong>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="action-buttons-wide">
+                                {% if cours.progression_reelle < 100 %}
+                                <a href="{% url 'gestion_cours:emargement' cours.pk %}" 
+                                   class="btn btn-sm btn-success" 
+                                   title="Faire l'émargement">
+                                    <i class="fas fa-signature me-1"></i>Émarger
                                 </a>
                                 {% else %}
                                 <button class="btn btn-sm btn-secondary" disabled title="Cours complété">
-                                    <i class="fas fa-check-circle"></i> Complété
+                                    <i class="fas fa-check-circle me-1"></i>Complété
                                 </button>
                                 {% endif %}
 
-                                <!-- CORRECTION: Bouton Historique (toujours visible) -->
-                                <a href="{% url 'gestion_cours:historique_cours' cours.pk %}"
-                                    class="btn btn-sm btn-info" title="Voir l'historique des émargements">
-                                    <i class="fas fa-history"></i> Historique
+                                <a href="{% url 'gestion_cours:historique_cours' cours.pk %}" 
+                                   class="btn btn-sm btn-info" 
+                                   title="Voir l'historique">
+                                    <i class="fas fa-history me-1"></i>Historique
                                 </a>
 
-                                <!-- CORRECTION: Bouton Évaluer (visible si 100% et pas encore évalué) -->
                                 {% if cours.peut_etre_evalue %}
-                                <a href="{% url 'gestion_cours:evaluation_manage' cours.pk %}"
-                                    class="btn btn-sm btn-success" title="Faire l'évaluation du cours">
-                                    <i class="fas fa-star"></i> Évaluer
+                                <a href="{% url 'gestion_cours:evaluation_manage' cours.pk %}" 
+                                   class="btn btn-sm btn-warning" 
+                                   title="Faire l'évaluation">
+                                    <i class="fas fa-star me-1"></i>Évaluer
                                 </a>
                                 {% elif cours.est_evalue %}
                                 <button class="btn btn-sm btn-outline-success" disabled title="Déjà évalué">
-                                    <i class="fas fa-check-double"></i> Évalué
+                                    <i class="fas fa-check-double me-1"></i>Évalué
                                 </button>
                                 {% endif %}
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
         {% else %}
         <div class="alert alert-info">
             <i class="fas fa-info-circle alert-icon"></i>
-            <span>Aucun cours programmé pour l'année académique active.</span>
+            <span>Aucun cours programmé trouvé avec ces critères de filtre.</span>
         </div>
         {% endif %}
     </div>
@@ -141,11 +167,145 @@
     <h5><i class="fas fa-info-circle"></i> Légende :</h5>
     <ul class="mb-0">
         <li><strong>Émarger</strong> : Enregistrer une nouvelle séance de cours</li>
-        <li><strong>Historique</strong> : Consulter toutes les séances déjà enregistrées</li>
-        <li><strong>Évaluer</strong> : Faire l'évaluation qualitative du cours (disponible uniquement si 100% complété
-            et pas encore évalué)</li>
-        <li><strong>Évalué</strong> : Le cours a déjà reçu une évaluation (non modifiable)</li>
+        <li><strong>Historique</strong> : Consulter toutes les séances enregistrées</li>
+        <li><strong>Évaluer</strong> : Faire l'évaluation qualitative (disponible uniquement si 100% complété)</li>
+        <li><strong>Semestre</strong> : S1 (Semestre 1) ou S2 (Semestre 2)</li>
     </ul>
 </div>
 
+<style>
+.page-header {
+    margin-bottom: 2rem;
+}
+
+.page-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #1E293B;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.filter-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.filter-header {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #1E293B;
+}
+
+.filter-form .row {
+    margin-bottom: 1rem;
+}
+
+.filter-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+}
+
+.matiere-cell strong {
+    display: block;
+    font-size: 0.95rem;
+}
+
+.badge-info {
+    background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+    color: white;
+    padding: 0.5rem 0.8rem;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+.badge-secondary {
+    background: linear-gradient(135deg, #64748B 0%, #475569 100%);
+    color: white;
+    padding: 0.5rem 0.8rem;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+.badge-primary {
+    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+.progress {
+    background-color: #E5E7EB;
+}
+
+.progress-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: white;
+}
+
+.action-buttons-wide {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.col-actions-wide {
+    min-width: 280px;
+    text-align: center;
+}
+
+.btn-sm {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.btn-sm:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .table-responsive {
+        overflow-x: auto;
+    }
+    
+    .action-buttons-wide {
+        flex-direction: column;
+    }
+    
+    .action-buttons-wide .btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .filter-actions {
+        flex-direction: column;
+    }
+    
+    .filter-actions .btn {
+        width: 100%;
+    }
+}
+</style>
 {% endblock %}

@@ -1,6 +1,8 @@
 """
 VIEWS.PY - Agrégateur central des vues
 Importe et expose toutes les vues des modules spécialisés
+
+🆕 MISE À JOUR: Ajout des nouvelles vues pour modification/suppression des émargements et évaluations
 """
 
 # Import des vues depuis les modules spécialisés
@@ -19,19 +21,22 @@ from .views_crud import (
     ProfesseurUpdateView,
     ProfesseurDeleteView,
     
-    # Matières
+    # 🆕 Matières (avec fonction de liste pour filtres)
+    matiere_list_view,  # NOUVEAU
     MatiereListView,
     MatiereCreateView,
     MatiereUpdateView,
     MatiereDeleteView,
     
-    # Filières
+    # 🆕 Filières (avec fonction de liste pour filtres)
+    filiere_list_view,  # NOUVEAU
     FiliereListView,
     FiliereCreateView,
     FiliereUpdateView,
     FiliereDeleteView,
     
-    # Niveaux
+    # 🆕 Niveaux (avec fonction de liste pour filtres)
+    niveau_list_view,  # NOUVEAU
     NiveauListView,
     NiveauCreateView,
     NiveauUpdateView,
@@ -52,23 +57,25 @@ from .views_cours_management import (
     MatiereProgrammeeDeleteView,
     
     # Émargements
-    emargement_selection_cours,
+    emargement_selection_view,
     emargement_view,
+    emargement_update_view,  # 🆕 NOUVEAU
+    emargement_delete_view,  # 🆕 NOUVEAU
     
     # Historique
     historique_view,
     historique_cours_view,
-    export_emargements_to_excel, # <-- AJOUT
-    export_emargements_to_pdf,   # <-- AJOUT
+    export_emargements_to_excel,
+    export_emargements_to_pdf,
     
     # Évaluations
     evaluation_list_view,
     EvaluationManagementView,
+    evaluation_update_view,  # 🆕 NOUVEAU
+    evaluation_delete_view,  # 🆕 NOUVEAU
 )
 
-# Pour compatibilité avec urls.py existants
-emargement_selection_view = emargement_selection_cours
-
+# Liste explicite de tous les exports
 __all__ = [
     # Dashboard
     'landing_page',
@@ -84,18 +91,21 @@ __all__ = [
     'ProfesseurDeleteView',
     
     # Matières
+    'matiere_list_view',
     'MatiereListView',
     'MatiereCreateView',
     'MatiereUpdateView',
     'MatiereDeleteView',
     
     # Filières
+    'filiere_list_view',
     'FiliereListView',
     'FiliereCreateView',
     'FiliereUpdateView',
     'FiliereDeleteView',
     
     # Niveaux
+    'niveau_list_view',
     'NiveauListView',
     'NiveauCreateView',
     'NiveauUpdateView',
@@ -114,17 +124,20 @@ __all__ = [
     'MatiereProgrammeeDeleteView',
     
     # Émargements
-    'emargement_selection_cours',
     'emargement_selection_view',
     'emargement_view',
+    'emargement_update_view',
+    'emargement_delete_view',
     
     # Historique
     'historique_view',
     'historique_cours_view',
-    'export_emargements_to_excel', # <-- AJOUT
-    'export_emargements_to_pdf',   # <-- AJOUT
+    'export_emargements_to_excel',
+    'export_emargements_to_pdf',
     
     # Évaluations
     'evaluation_list_view',
     'EvaluationManagementView',
+    'evaluation_update_view',
+    'evaluation_delete_view',
 ]

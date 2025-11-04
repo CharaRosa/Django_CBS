@@ -24,25 +24,35 @@
     </div>
 </div>
 
-<!-- Messages -->
 {% include "gestion_cours/includes/messages.html" %}
 
-<!-- Filtres -->
+<!-- Filtres responsive -->
 <div class="filter-card">
     <div class="filter-header">
         <i class="fas fa-filter"></i>
         Filtrer les Évaluations
     </div>
     <form method="get" class="filter-form">
-        <div class="row">
-            <div class="col-md-4">
-                {{ filter.form.matiere_programmer__matiere }}
+        <div class="row g-3">
+            <div class="col-lg-3 col-md-4 col-12">
+                <label class="form-label">Matière</label>
+                {{ filter.form.matiere }}
             </div>
-            <div class="col-md-4">
-                {{ filter.form.matiere_programmer__professeur }}
+            <div class="col-lg-3 col-md-4 col-12">
+                <label class="form-label">Professeur</label>
+                {{ filter.form.professeur }}
             </div>
-            <div class="col-md-4">
-                {{ filter.form.utilisateur_evaluation }}
+            <div class="col-lg-2 col-md-4 col-12">
+                <label class="form-label">Filière</label>
+                {{ filter.form.filiere }}
+            </div>
+            <div class="col-lg-2 col-md-4 col-12">
+                <label class="form-label">Niveau</label>
+                {{ filter.form.niveau }}
+            </div>
+            <div class="col-lg-2 col-md-4 col-12">
+                <label class="form-label">Semestre</label>
+                {{ filter.form.semestre }}
             </div>
         </div>
         <div class="filter-actions">
@@ -56,96 +66,236 @@
     </form>
 </div>
 
-<!-- Table des évaluations -->
-<div class="table-card mt-4">
+<!-- Tableau -->
+<div class="table-card">
     <div class="table-wrapper">
         {% if evaluations %}
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Cours</th>
-                    <th>Professeur</th>
-                    <th>Niveau</th>
-                    <!-- CORRECTION: Affichage des 3 colonnes -->
-                    <th>Résumé de l'Évaluation</th>
-                    <th>Appréciation AP</th>
-                    <th>Recommandations</th>
-                    <th>Évalué par</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for evaluation in evaluations %}
-                <tr>
-                    <td>
-                        <strong>{{ evaluation.matiere_programmer.matiere.libelle }}</strong>
-                        <br>
-                        <small class="text-muted">{{ evaluation.matiere_programmer.matiere.code }}</small>
-                    </td>
-                    <td>{{ evaluation.matiere_programmer.professeur }}</td>
-                    <td>
-                        <span class="badge badge-info">
-                            {{ evaluation.matiere_programmer.niveau.libelle }}
-                        </span>
-                    </td>
-                    <!-- CORRECTION: Colonne 1 - Résumé de l'Évaluation du Cours -->
-                    <td>
-                        {% if evaluation.resume_evaluation %}
-                            <div style="max-width: 250px; white-space: normal;">
-                                {{ evaluation.resume_evaluation|truncatewords:20 }}
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Matière</th>
+                        <th>Professeur</th>
+                        <th>Niveau</th>
+                        <th>Résumé Évaluation</th>
+                        <th>Appréciation AP</th>
+                        <th>Recommandations</th>
+                        <th>Évaluateur</th>
+                        <th class="col-actions">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for eval in evaluations %}
+                    <tr>
+                        <td>
+                            <strong>{{ eval.matiere_programmer.matiere.libelle }}</strong>
+                        </td>
+                        <td>{{ eval.matiere_programmer.professeur }}</td>
+                        <td>
+                            <span class="badge badge-info">{{ eval.matiere_programmer.niveau.niv }}</span>
+                        </td>
+                        <td class="text-truncate" style="max-width: 200px;">
+                            {{ eval.resume_evaluation|truncatewords:15 }}
+                        </td>
+                        <td class="text-truncate" style="max-width: 200px;">
+                            {{ eval.resume_ap|truncatewords:15 }}
+                        </td>
+                        <td class="text-truncate" style="max-width: 200px;">
+                            {{ eval.recommandation|truncatewords:15 }}
+                        </td>
+                        <td>{{ eval.utilisateur_evaluation.username }}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{% url 'gestion_cours:evaluation_update' eval.pk %}" 
+                                   class="btn-action btn-action-edit" 
+                                   title="Modifier">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'gestion_cours:evaluation_delete' eval.pk %}" 
+                                   class="btn-action btn-action-delete" 
+                                   title="Supprimer">
+                                    <i class="fas fa-trash"></i>
+                                </a>
                             </div>
-                        {% else %}
-                            <em class="text-muted">Non renseigné</em>
-                        {% endif %}
-                    </td>
-                    <!-- CORRECTION: Colonne 2 - Appréciation de l'Assistant Pédagogique -->
-                    <td>
-                        {% if evaluation.appreciation_ap %}
-                            <div style="max-width: 250px; white-space: normal;">
-                                {{ evaluation.appreciation_ap|truncatewords:20 }}
-                            </div>
-                        {% else %}
-                            <em class="text-muted">Non renseigné</em>
-                        {% endif %}
-                    </td>
-                    <!-- CORRECTION: Colonne 3 - Recommandations et Suggestions -->
-                    <td>
-                        {% if evaluation.recommandations %}
-                            <div style="max-width: 250px; white-space: normal;">
-                                {{ evaluation.recommandations|truncatewords:20 }}
-                            </div>
-                        {% else %}
-                            <em class="text-muted">Non renseigné</em>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if evaluation.utilisateur_evaluation %}
-                            {{ evaluation.utilisateur_evaluation.get_full_name }}
-                        {% else %}
-                            <em class="text-muted">Système</em>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
         {% else %}
-        <div class="alert alert-info">
-            <i class="fas fa-info-circle alert-icon"></i>
-            <span>Aucune évaluation trouvée.</span>
+        <div class="empty-state">
+            <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+            <p class="text-muted">Aucune évaluation trouvée.</p>
         </div>
         {% endif %}
     </div>
 </div>
 
-<!-- Note explicative -->
-<div class="alert alert-light mt-4">
-    <h5><i class="fas fa-info-circle"></i> À propos des évaluations :</h5>
-    <ul class="mb-0">
-        <li>Les évaluations ne peuvent être créées que pour les cours ayant atteint 100% de progression</li>
-        <li>Une fois créée, <strong>une évaluation ne peut plus être modifiée</strong></li>
-        <li>Les 3 colonnes affichées sont : <strong>Résumé de l'Évaluation</strong>, <strong>Appréciation AP</strong>, et <strong>Recommandations</strong></li>
-        <li>Ces 3 colonnes sont également présentes dans les exports Excel et PDF</li>
-    </ul>
-</div>
+<style>
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
 
+.page-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.export-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-export {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-export-excel {
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    color: white;
+}
+
+.btn-export-excel:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+}
+
+.btn-export-pdf {
+    background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+    color: white;
+}
+
+.btn-export-pdf:hover {
+    background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+}
+
+.filter-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.filter-header {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #1E293B;
+}
+
+.filter-form .row {
+    margin-bottom: 1rem;
+}
+
+.filter-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+}
+
+.badge-info {
+    background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+    color: white;
+    padding: 0.5rem 0.8rem;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    font-size: 0.95rem;
+}
+
+.btn-action-edit {
+    background-color: #ffc107;
+    color: white;
+}
+
+.btn-action-edit:hover {
+    background-color: #e0a800;
+    transform: scale(1.1);
+    box-shadow: 0 3px 8px rgba(255, 193, 7, 0.4);
+}
+
+.btn-action-delete {
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn-action-delete:hover {
+    background-color: #c82333;
+    transform: scale(1.1);
+    box-shadow: 0 3px 8px rgba(220, 53, 69, 0.4);
+}
+
+.empty-state {
+    padding: 3rem;
+    text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .export-buttons {
+        width: 100%;
+    }
+    
+    .btn-export {
+        flex: 1;
+        justify-content: center;
+    }
+    
+    .table-responsive {
+        overflow-x: auto;
+    }
+    
+    .filter-actions {
+        flex-direction: column;
+    }
+    
+    .filter-actions .btn {
+        width: 100%;
+    }
+}
+</style>
 {% endblock %}

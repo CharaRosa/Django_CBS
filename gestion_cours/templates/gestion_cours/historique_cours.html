@@ -4,106 +4,386 @@
 {% block title %}Historique : {{ matiere_prog.matiere.libelle }}{% endblock %}
 
 {% block content %}
-<!-- En-tête de page -->
-<div class="page-header">
-    <h1 class="page-title">
-        <i class="fas fa-history"></i>
-        Historique du Cours
-    </h1>
-    <div class="page-actions">
-        <a href="{% url 'gestion_cours:home' %}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left me-2"></i>Retour au Tableau de Bord
-        </a>
+<!-- En-tête amélioré -->
+<div class="page-header-custom">
+    <div class="header-content">
+        <div class="header-title-section">
+            <h1 class="page-title">
+                <i class="fas fa-history"></i>
+                Historique du Cours
+            </h1>
+            <p class="course-title">{{ matiere_prog.matiere.libelle }}</p>
+        </div>
+        <div class="header-actions">
+            <a href="{% url 'gestion_cours:home' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Retour
+            </a>
+        </div>
     </div>
 </div>
 
-<!-- Informations du cours -->
-<div class="alert alert-info">
-    <div class="alert-icon">
-        <i class="fas fa-book"></i>
+<!-- Carte d'informations du cours -->
+<div class="course-info-card">
+    <div class="info-header">
+        <i class="fas fa-info-circle"></i>
+        <span>Informations du Cours</span>
     </div>
-    <div>
-        <h4 class="mb-2">
-            <strong>{{ matiere_prog.matiere.libelle }}</strong>
-            <span class="badge badge-info ms-2">{{ matiere_prog.filiere.code }} - {{ matiere_prog.niveau.libelle }}</span>
-        </h4>
-        <div class="row">
-            <div class="col-md-3">
-                <p class="mb-1"><strong>Professeur:</strong> {{ matiere_prog.professeur.prenoms }} {{ matiere_prog.professeur.nom }}</p>
+    <div class="info-grid">
+        <div class="info-item">
+            <div class="info-label">Filière / Niveau</div>
+            <div class="info-value">
+                <span class="badge badge-info">{{ matiere_prog.filiere.code }}</span>
+                <span class="badge badge-secondary">{{ matiere_prog.niveau.libelle }} {{ matiere_prog.niveau.niv }}</span>
             </div>
-            <div class="col-md-3">
-                <p class="mb-1"><strong>Année:</strong> {{ matiere_prog.annee_academique.annee_accademique }}</p>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Professeur</div>
+            <div class="info-value">{{ matiere_prog.professeur }}</div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Volume prévu</div>
+            <div class="info-value"><strong>{{ matiere_prog.nbr_heure }}h</strong></div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Heures effectuées</div>
+            <div class="info-value text-success">
+                <strong>{{ progression_details.total_heures_faites }}h</strong>
             </div>
-            <div class="col-md-3">
-                <p class="mb-1"><strong>Volume Prévu:</strong> {{ matiere_prog.nbr_heure|floatformat:2 }}h</p>
-            </div>
-            <div class="col-md-3">
-                <p class="mb-1">
-                    <strong>Heures Faites:</strong> 
-                    <span class="badge badge-success">{{ progression_details.total_heures_faites|floatformat:2 }}h</span>
-                </p>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Progression</div>
+            <div class="info-value">
+                <span class="badge 
+                    {% if progression_details.progression_reelle >= 100 %}badge-success
+                    {% elif progression_details.progression_reelle >= 75 %}badge-warning
+                    {% else %}badge-danger{% endif %}">
+                    {{ progression_details.progression_reelle|floatformat:1 }}%
+                </span>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Tableau des séances -->
+{% include "gestion_cours/includes/messages.html" %}
+
+<!-- Tableau historique simplifié -->
 <div class="table-card">
     <div class="table-header">
-        <h2 class="table-title">
-            <i class="fas fa-list"></i>
-            Séances Émargées ({{ historique_emargement|length }})
-        </h2>
+        <h3>
+            <i class="fas fa-list me-2"></i>
+            Séances Enregistrées 
+            <span class="badge badge-primary">{{ historique_emargement|length }}</span>
+        </h3>
     </div>
-    
     <div class="table-wrapper">
         {% if historique_emargement %}
         <table class="data-table">
             <thead>
                 <tr>
                     <th>Date</th>
-                    <th class="text-center">Heures</th>
-                    <th>Thème Abordé</th>
-                    <th>Émargé par</th>
+                    <th class="text-center">Durée</th>
+                    <th class="col-actions">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for emargement in historique_emargement %}
                 <tr>
-                    <td>{{ emargement.date_emar|date:"d/m/Y" }}</td>
-                    <td class="text-center col-number">
-                        <span class="badge badge-info">{{ emargement.heure_eff|floatformat:2 }}h</span>
-                    </td>
-                    <td class="col-description">{{ emargement.theme_aborde }}</td>
                     <td>
-                        {% with user=emargement.emarge_par %}
-                            {% if user %}
-                                <strong>{{ user.get_full_name|default:user.username }}</strong>
-                                <br>
-                                {% if user.is_superuser %}
-                                    <span class="badge badge-danger">Administrateur</span>
-                                {% elif user.groups.all %}
-                                    <span class="badge badge-primary">{{ user.groups.first.name }}</span>
-                                {% else %}
-                                    <span class="badge badge-secondary">Utilisateur</span>
-                                {% endif %}
-                            {% else %}
-                                <span class="text-danger">N/A</span>
-                            {% endif %}
-                        {% endwith %}
+                        <div class="date-display">
+                            <i class="fas fa-calendar-day me-2"></i>
+                            {{ emargement.date_emar|date:"d/m/Y" }}
+                        </div>
+                    </td>
+                    <td class="text-center">
+                        <span class="badge badge-primary-lg">{{ emargement.heure_eff }}h</span>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="{% url 'gestion_cours:emargement_update' emargement.pk %}" 
+                               class="btn-action btn-action-edit" 
+                               title="Modifier">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'gestion_cours:emargement_delete' emargement.pk %}" 
+                               class="btn-action btn-action-delete" 
+                               title="Supprimer">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
         {% else %}
-        <!-- État vide -->
         <div class="empty-state">
-            <i class="fas fa-calendar-times empty-state-icon"></i>
-            <h3 class="empty-state-title">Aucune séance émargée</h3>
-            <p class="empty-state-text">Les séances apparaîtront ici une fois enregistrées</p>
+            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+            <p class="text-muted">Aucun émargement enregistré pour ce cours.</p>
         </div>
         {% endif %}
     </div>
 </div>
-{% endblock content %}
+
+<!-- Section Évaluation -->
+{% if evaluation %}
+<div class="evaluation-card">
+    <div class="evaluation-header">
+        <i class="fas fa-check-circle"></i>
+        <h5>Évaluation Qualitative</h5>
+    </div>
+    <div class="evaluation-content">
+        <div class="evaluation-section">
+            <strong>Résumé :</strong>
+            <p>{{ evaluation.resume_evaluation|truncatewords:50 }}</p>
+        </div>
+        <div class="evaluation-section">
+            <strong>Appréciation AP :</strong>
+            <p>{{ evaluation.appreciation_ap|truncatewords:50 }}</p>
+        </div>
+        <div class="evaluation-section">
+            <strong>Recommandations :</strong>
+            <p>{{ evaluation.recommandations|truncatewords:50 }}</p>
+        </div>
+    </div>
+    <div class="evaluation-actions">
+        <a href="{% url 'gestion_cours:evaluation_update' evaluation.pk %}" class="btn btn-sm btn-warning">
+            <i class="fas fa-edit me-1"></i>Modifier
+        </a>
+        <a href="{% url 'gestion_cours:evaluation_delete' evaluation.pk %}" class="btn btn-sm btn-danger">
+            <i class="fas fa-trash me-1"></i>Supprimer
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<style>
+.page-header-custom {
+    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    color: white;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.header-title-section {
+    flex: 1;
+}
+
+.page-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.course-title {
+    font-size: 1.1rem;
+    margin: 0;
+    opacity: 0.95;
+}
+
+.course-info-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.info-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #1E293B;
+    margin-bottom: 1.5rem;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.info-label {
+    font-size: 0.85rem;
+    color: #64748B;
+    font-weight: 500;
+}
+
+.info-value {
+    font-size: 1rem;
+    color: #1E293B;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.badge-info {
+    background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+.badge-secondary {
+    background: linear-gradient(135deg, #64748B 0%, #475569 100%);
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+.badge-primary {
+    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+    color: white;
+    padding: 0.3rem 0.6rem;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+.badge-primary-lg {
+    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+    color: white;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.date-display {
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    font-size: 0.95rem;
+}
+
+.btn-action-edit {
+    background-color: #ffc107;
+    color: white;
+}
+
+.btn-action-edit:hover {
+    background-color: #e0a800;
+    transform: scale(1.1);
+    box-shadow: 0 3px 8px rgba(255, 193, 7, 0.4);
+}
+
+.btn-action-delete {
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn-action-delete:hover {
+    background-color: #c82333;
+    transform: scale(1.1);
+    box-shadow: 0 3px 8px rgba(220, 53, 69, 0.4);
+}
+
+.evaluation-card {
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    border-radius: 12px;
+    padding: 1.5rem;
+    color: white;
+    margin-top: 2rem;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.evaluation-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.evaluation-header h5 {
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+.evaluation-content {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.evaluation-section {
+    margin-bottom: 1rem;
+}
+
+.evaluation-section:last-child {
+    margin-bottom: 0;
+}
+
+.evaluation-section strong {
+    display: block;
+    margin-bottom: 0.3rem;
+}
+
+.evaluation-section p {
+    margin: 0;
+    opacity: 0.95;
+}
+
+.evaluation-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.empty-state {
+    padding: 3rem;
+    text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .header-content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .table-wrapper {
+        overflow-x: auto;
+    }
+}
+</style>
+{% endblock %}

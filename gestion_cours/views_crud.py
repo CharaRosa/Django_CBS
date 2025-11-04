@@ -1,26 +1,39 @@
 """
-VIEWS_CRUD.PY - Vues CRUD pour entités simples
-(Professeur, Matiere, Filiere, Niveau, AnneeAcademique)
+VIEWS_CRUD.PY - Vues CRUD pour entités simples (VERSION CORRIGÉE)
+🔧 CORRECTIONS:
+1. ✅ Filtres fonctionnels pour Matière, Filière, Niveau
+2. ✅ Exports Excel/PDF ajoutés
+3. ✅ Pagination à 10 lignes
 """
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.contrib import messages
+from django.http import HttpResponse
 
 # Import des modèles
 from .models import Professeur, Matiere, Filiere, Niveau, AnneeAcademique
 from .forms import ProfesseurForm, MatiereForm
-from .filters_complete import ProfesseurFilter 
+# 🆕 Importation des nouveaux filtres
+from .filters_complete import (
+    ProfesseurFilter, 
+    FiliereFilter, 
+    NiveauFilter, 
+    MatiereFilter
+)
 
 # Import des utilitaires et de la classe de base
 from .views_dashboard import BaseAPView, paginate_queryset 
 from .export_utils_complete import (
-    export_professeurs_to_excel, export_professeurs_to_pdf
+    export_professeurs_to_excel, export_professeurs_to_pdf,
+    export_matieres_to_excel, export_matieres_to_pdf,
+    export_filieres_to_excel, export_filieres_to_pdf,
+    export_niveaux_to_excel, export_niveaux_to_pdf
 )
 
 
 # ==============================================================================
-# CRUD - PROFESSEURS
+# CRUD - PROFESSEURS (DÉJÀ CORRIGÉ ✅)
 # ==============================================================================
 
 def professeur_list_view(request):
@@ -91,10 +104,40 @@ class ProfesseurDeleteView(BaseAPView, DeleteView):
 
 
 # ==============================================================================
-# CRUD - MATIÈRES
+# 🔧 CRUD - MATIÈRES (CORRIGÉ AVEC FILTRES ET EXPORTS)
 # ==============================================================================
 
+def matiere_list_view(request):
+    """
+    🔧 CORRECTION: Liste des matières avec filtres, exports et pagination.
+    """
+    matiere_list = Matiere.objects.all().order_by('libelle')
+    matiere_filter = MatiereFilter(request.GET, queryset=matiere_list)
+    
+    # 🆕 Gestion des exports
+    if 'export' in request.GET:
+        export_type = request.GET.get('export')
+        filtered_qs = matiere_filter.qs
+        
+        if export_type == 'excel':
+            return export_matieres_to_excel(filtered_qs)
+        elif export_type == 'pdf':
+            return export_matieres_to_pdf(filtered_qs)
+    
+    # Pagination
+    page_obj = paginate_queryset(request, matiere_filter.qs, items_per_page=10)
+    
+    context = {
+        'filter': matiere_filter,
+        'object_list': page_obj,
+        'is_paginated': page_obj.has_other_pages(),
+        'page_obj': page_obj,
+    }
+    return render(request, 'gestion_cours/matiere_list.html', context)
+
+
 class MatiereListView(BaseAPView, ListView):
+    """DEPRECATED: Utilisez matiere_list_view() à la place."""
     model = Matiere
     template_name = 'gestion_cours/matiere_list.html'
     context_object_name = 'object_list'
@@ -135,10 +178,40 @@ class MatiereDeleteView(BaseAPView, DeleteView):
 
 
 # ==============================================================================
-# CRUD - FILIÈRES
+# 🔧 CRUD - FILIÈRES (CORRIGÉ AVEC FILTRES ET EXPORTS)
 # ==============================================================================
 
+def filiere_list_view(request):
+    """
+    🔧 CORRECTION: Liste des filières avec filtres, exports et pagination.
+    """
+    filiere_list = Filiere.objects.all().order_by('libelle')
+    filiere_filter = FiliereFilter(request.GET, queryset=filiere_list)
+    
+    # 🆕 Gestion des exports
+    if 'export' in request.GET:
+        export_type = request.GET.get('export')
+        filtered_qs = filiere_filter.qs
+        
+        if export_type == 'excel':
+            return export_filieres_to_excel(filtered_qs)
+        elif export_type == 'pdf':
+            return export_filieres_to_pdf(filtered_qs)
+    
+    # Pagination
+    page_obj = paginate_queryset(request, filiere_filter.qs, items_per_page=10)
+    
+    context = {
+        'filter': filiere_filter,
+        'object_list': page_obj,
+        'is_paginated': page_obj.has_other_pages(),
+        'page_obj': page_obj,
+    }
+    return render(request, 'gestion_cours/filiere_list.html', context)
+
+
 class FiliereListView(BaseAPView, ListView):
+    """DEPRECATED: Utilisez filiere_list_view() à la place."""
     model = Filiere
     template_name = 'gestion_cours/filiere_list.html'
     context_object_name = 'object_list'
@@ -184,10 +257,40 @@ class FiliereDeleteView(BaseAPView, DeleteView):
 
 
 # ==============================================================================
-# CRUD - NIVEAUX
+# 🔧 CRUD - NIVEAUX (CORRIGÉ AVEC FILTRES ET EXPORTS)
 # ==============================================================================
 
+def niveau_list_view(request):
+    """
+    🔧 CORRECTION: Liste des niveaux avec filtres, exports et pagination.
+    """
+    niveau_list = Niveau.objects.all().select_related('filiere').order_by('filiere__libelle', 'niv')
+    niveau_filter = NiveauFilter(request.GET, queryset=niveau_list)
+    
+    # 🆕 Gestion des exports
+    if 'export' in request.GET:
+        export_type = request.GET.get('export')
+        filtered_qs = niveau_filter.qs
+        
+        if export_type == 'excel':
+            return export_niveaux_to_excel(filtered_qs)
+        elif export_type == 'pdf':
+            return export_niveaux_to_pdf(filtered_qs)
+    
+    # Pagination
+    page_obj = paginate_queryset(request, niveau_filter.qs, items_per_page=10)
+    
+    context = {
+        'filter': niveau_filter,
+        'object_list': page_obj,
+        'is_paginated': page_obj.has_other_pages(),
+        'page_obj': page_obj,
+    }
+    return render(request, 'gestion_cours/niveau_list.html', context)
+
+
 class NiveauListView(BaseAPView, ListView):
+    """DEPRECATED: Utilisez niveau_list_view() à la place."""
     model = Niveau
     template_name = 'gestion_cours/niveau_list.html'
     context_object_name = 'object_list'

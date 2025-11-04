@@ -1,7 +1,9 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
 
-{% block title %}Nouvelle Évaluation{% endblock %}
+{% block title %}
+    {% if mode_edition %}Modifier l'Évaluation{% else %}Nouvelle Évaluation{% endif %}
+{% endblock %}
 
 {% block content %}
 <div class="form-container">
@@ -9,7 +11,11 @@
         <div class="form-header">
             <h1 class="form-title">
                 <i class="fas fa-clipboard-check"></i>
-                Nouvelle Évaluation Qualitative
+                {% if mode_edition %}
+                    Modification de l'Évaluation Qualitative
+                {% else %}
+                    Nouvelle Évaluation Qualitative
+                {% endif %}
             </h1>
             <p class="form-subtitle">
                 Évaluation du cours : {{ matiere_prog.matiere.libelle }}
@@ -35,9 +41,11 @@
             <div>
                 <h4 class="mb-2">
                     <strong>{{ matiere_prog.matiere.libelle }}</strong>
+                    {% if not mode_edition %}
                     <span class="badge badge-success ms-2">
                         <i class="fas fa-check-circle"></i> Cours complété à {{ progression|floatformat:1 }}%
                     </span>
+                    {% endif %}
                 </h4>
                 <div class="row">
                     <div class="col-md-6">
@@ -52,16 +60,18 @@
             </div>
         </div>
 
-        <!-- Note importante -->
+        <!-- Note importante (seulement en mode création) -->
+        {% if not mode_edition %}
         <div class="alert alert-warning">
             <i class="fas fa-exclamation-triangle alert-icon"></i>
             <div>
                 <strong>Important :</strong>
-                <p class="mb-0">Une fois l'évaluation enregistrée, <strong>elle ne pourra plus être modifiée</strong>. Veuillez remplir tous les champs avec attention.</p>
+                <p class="mb-0">Une fois l'évaluation enregistrée, vous pourrez la modifier via la liste des évaluations.</p>
             </div>
         </div>
+        {% endif %}
 
-        <!-- Formulaire d'évaluation (CORRECTION: 3 champs) -->
+        <!-- 🆕 CORRECTION: Formulaire avec labels explicites -->
         <form method="post" action="">
             {% csrf_token %}
             
@@ -72,7 +82,17 @@
                     1. Résumé de l'Évaluation du Cours
                 </h3>
                 <p class="text-muted">Décrivez le déroulement du cours, les points forts et les difficultés rencontrées.</p>
-                {{ form.resume_evaluation }}
+                
+                <!-- 🆕 CORRECTION: Rendu manuel pour forcer la visibilité -->
+                <div class="mb-3">
+                    <label for="{{ form.resume_evaluation.id_for_label }}" class="form-label">
+                        {{ form.resume_evaluation.label }}
+                    </label>
+                    {{ form.resume_evaluation }}
+                    {% if form.resume_evaluation.errors %}
+                        <div class="text-danger small">{{ form.resume_evaluation.errors }}</div>
+                    {% endif %}
+                </div>
             </div>
 
             <!-- Section 2 : Appréciation de l'Assistant Pédagogique -->
@@ -82,7 +102,16 @@
                     2. Appréciation de l'Assistant Pédagogique (AP)
                 </h3>
                 <p class="text-muted">Votre appréciation personnelle sur la qualité du cours et l'implication du professeur.</p>
-                {{ form.appreciation_ap }}
+                
+                <div class="mb-3">
+                    <label for="{{ form.resume_ap.id_for_label }}" class="form-label">
+                        {{ form.resume_ap.label }}
+                    </label>
+                    {{ form.resume_ap }}
+                    {% if form.resume_ap.errors %}
+                        <div class="text-danger small">{{ form.resume_ap.errors }}</div>
+                    {% endif %}
+                </div>
             </div>
 
             <!-- Section 3 : Recommandations et Suggestions -->
@@ -92,14 +121,24 @@
                     3. Recommandations et Suggestions
                 </h3>
                 <p class="text-muted">Proposez des améliorations pour les prochaines sessions de ce cours.</p>
-                {{ form.recommandations }}
+                
+                <div class="mb-3">
+                    <label for="{{ form.recommandation.id_for_label }}" class="form-label">
+                        {{ form.recommandation.label }}
+                    </label>
+                    {{ form.recommandation }}
+                    {% if form.recommandation.errors %}
+                        <div class="text-danger small">{{ form.recommandation.errors }}</div>
+                    {% endif %}
+                </div>
             </div>
             
             <div class="form-actions">
                 <button type="submit" class="btn btn-success">
-                    <i class="fas fa-save me-2"></i>Enregistrer l'Évaluation (Définitif)
+                    <i class="fas fa-save me-2"></i>
+                    {% if mode_edition %}Enregistrer les Modifications{% else %}Enregistrer l'Évaluation{% endif %}
                 </button>
-                <a href="{% url 'gestion_cours:emargement_selection' %}" class="btn btn-secondary">
+                <a href="{% url 'gestion_cours:evaluation_list' %}" class="btn btn-secondary">
                     <i class="fas fa-times me-2"></i>Annuler
                 </a>
             </div>
@@ -115,7 +154,6 @@
         <li><strong>Appréciation AP</strong> : Donnez votre avis professionnel sur la qualité de l'enseignement</li>
         <li><strong>Recommandations</strong> : Suggérez des axes d'amélioration concrets et réalistes</li>
         <li>Tous les champs sont <strong>obligatoires</strong></li>
-        <li>Une fois enregistrée, l'évaluation devient <strong>définitive et non modifiable</strong></li>
     </ul>
 </div>
 

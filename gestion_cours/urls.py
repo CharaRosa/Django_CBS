@@ -9,19 +9,45 @@ urlpatterns = [
     path('login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     
+    # Password Reset URLs (Ajouté)
+    path('password-reset/', 
+         auth_views.PasswordResetView.as_view(
+             template_name='registration/password_reset_form.html'
+         ), 
+         name='password_reset'),
+    
+    path('password-reset/done/', 
+         auth_views.PasswordResetDoneView.as_view(
+             template_name='registration/password_reset_done.html'
+         ), 
+         name='password_reset_done'),
+    
+    path('password-reset-confirm/<uidb64>/<token>/', 
+         auth_views.PasswordResetConfirmView.as_view(
+             template_name='registration/password_reset_confirm.html'
+         ), 
+         name='password_reset_confirm'),
+    
+    path('password-reset-complete/', 
+         auth_views.PasswordResetCompleteView.as_view(
+             template_name='registration/password_reset_complete.html'
+         ), 
+         name='password_reset_complete'),
+    
     # ------------------ Pages Principales -------------------
     path('', views.landing_page, name='landing'),
     path('dashboard/', views.home_view, name='home'), 
     path('historique/', views.historique_view, name='historique'),
     path('cours/<int:pk>/historique/', views.historique_cours_view, name='historique_cours'),
     path('historique/export/excel/', views.export_emargements_to_excel, name='export_emargements_excel'),
-    
-    # 3. Chemin pour l'export PDF (l'erreur potentielle suivante à la ligne 30)
     path('historique/export/pdf/', views.export_emargements_to_pdf, name='export_emargements_pdf'),
     
     # ------------------ Émargements -------------------
     path('emargement/selection/', views.emargement_selection_view, name='emargement_selection'),
     path('emargement/<int:pk>/', views.emargement_view, name='emargement'),
+    # 🆕 NOUVEAU: Modification et suppression d'émargements
+    path('emargement/<int:pk>/update/', views.emargement_update_view, name='emargement_update'),
+    path('emargement/<int:pk>/delete/', views.emargement_delete_view, name='emargement_delete'),
     
     # ------------------ Professeurs -------------------
     path('professeurs/', views.professeur_list_view, name='professeur_list'),
@@ -62,5 +88,14 @@ urlpatterns = [
     # ------------------ Évaluations -------------------
     path('evaluations/', views.evaluation_list_view, name='evaluation_list'),
     path('evaluations/<int:pk>/', views.EvaluationManagementView.as_view(), name='evaluation_manage'),
+    # 🆕 NOUVEAU: Modification et suppression d'évaluations
+    path('evaluations/<int:pk>/update/', views.evaluation_update_view, name='evaluation_update'),
+    path('evaluations/<int:pk>/delete/', views.evaluation_delete_view, name='evaluation_delete'),
+    path('password-reset/', 
+     auth_views.PasswordResetView.as_view(
+         template_name='registration/password_reset_form.html'
+     ), 
+     name='password_reset'),
+
     
 ]

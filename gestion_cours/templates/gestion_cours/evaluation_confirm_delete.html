@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Confirmer la Suppression - Évaluation{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-card border-danger">
+        <div class="form-header bg-danger">
+            <h1 class="form-title text-white">
+                <i class="fas fa-exclamation-triangle"></i>
+                Confirmer la Suppression d'Évaluation
+            </h1>
+        </div>
+
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-circle alert-icon"></i>
+            <div>
+                <p class="mb-2">Êtes-vous sûr de vouloir supprimer cette évaluation ?</p>
+                <div class="mt-3">
+                    <p><strong>Cours :</strong> {{ object.matiere_programmer.matiere.libelle }}</p>
+                    <p><strong>Professeur :</strong> {{ object.matiere_programmer.professeur }}</p>
+                    <p><strong>Niveau :</strong> {{ object.matiere_programmer.niveau.niv }}</p>
+                    <p><strong>Évaluateur :</strong> {{ object.utilisateur_evaluation.username }}</p>
+                </div>
+            </div>
+        </div>
+
+        <p class="text-muted mb-4">
+            Cette action est irréversible. L'évaluation qualitative sera définitivement supprimée.
+        </p>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-actions">
+                <a href="{% url list_url %}" class="btn btn-secondary">
+                    <i class="fas fa-times me-2"></i>Annuler
+                </a>
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash me-2"></i>Confirmer la Suppression
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.form-container {
+    max-width: 700px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.border-danger {
+    border-top: 4px solid #dc3545 !important;
+}
+
+.bg-danger {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+}
+
+.alert-icon {
+    font-size: 1.5rem;
+    margin-right: 0.75rem;
+}
+</style>
+{% endblock %}
