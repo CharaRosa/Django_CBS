@@ -22,17 +22,22 @@ from django.conf.urls.static import static # Import pour les fichiers statiques 
 from django.conf import settings # <-- NOUVEAU
 from django.conf.urls.static import static # <-- NOUVEAU
 
-
 urlpatterns = [
     path('admin/', admin.site.urls),
-    # AJOUTER CECI: Inclut toutes les URLs d'authentification (login, logout, password change)
-    path('accounts/', include('django.contrib.auth.urls')),
-    path('', include('gestion_cours.urls')), # Lien vers l'application
+    
+    # 🔧 CORRECTION: Password reset SANS préfixe
+    path('', include('django.contrib.auth.urls')),  
+    
+    # Routes de l'application
+    path('', include('gestion_cours.urls')),
 ]
+
+# Médias (développement uniquement)
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
 # Ajoutez ceci si vous gérez des fichiers statiques/média (bonnes pratiques)
 if settings.DEBUG:
 # Correction: La fonction doit être appelée 'static', pas 'stat'
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) # <-- NOUVEAU

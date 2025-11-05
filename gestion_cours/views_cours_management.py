@@ -6,6 +6,8 @@ VIEWS_COURS_MANAGEMENT.PY - Vues complexes
 1. ✅ Pagination corrigée à 10 lignes (pas 20)
 2. ✅ Filtres fonctionnels avec semestre
 3. ✅ Utilisation correcte de page_obj dans toutes les vues paginées
+4. 🟢 CORRECTION CRITIQUE: La vue historique_cours_view passe maintenant le queryset des 
+   émargements sous la clé 'emargements' pour correspondre au template.
 """
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.shortcuts import render, redirect, get_object_or_404
@@ -502,7 +504,8 @@ def historique_cours_view(request, pk):
 
     context = {
         'matiere_prog': matiere_prog,
-        'historique_emargement': historique_emargement_list,
+        # 🟢 CORRECTION: Remplacer 'historique_emargement' par 'emargements'
+        'emargements': historique_emargement_list,
         'progression_details': progression_details,
         'evaluation': evaluation,
     }

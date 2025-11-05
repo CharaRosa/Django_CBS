@@ -25,7 +25,6 @@
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             
-            <!-- Section 1 : Informations personnelles -->
             <div class="form-section">
                 <h3 class="form-section-title">
                     <i class="fas fa-user"></i>
@@ -38,7 +37,6 @@
                 </div>
             </div>
             
-            <!-- Section 2 : Contact -->
             <div class="form-section">
                 <h3 class="form-section-title">
                     <i class="fas fa-address-book"></i>
@@ -51,7 +49,6 @@
                 </div>
             </div>
             
-            <!-- Section 3 : Informations académiques (si les champs existent) -->
             {% if form.grade or form.domaine %}
             <div class="form-section">
                 <h3 class="form-section-title">
@@ -66,14 +63,16 @@
             </div>
             {% endif %}
             
-            <!-- CV (si le champ existe) -->
-            {% if form.cv %}
+            {% if form.cv or form.dernier_diplome %}
             <div class="form-section">
                 <h3 class="form-section-title">
                     <i class="fas fa-file-upload"></i>
                     Documents
                 </h3>
-                {{ form.cv|as_crispy_field }}
+                <div class="form-grid-2"> 
+                    {% if form.cv %}{{ form.cv|as_crispy_field }}{% endif %}
+                    {% if form.dernier_diplome %}{{ form.dernier_diplome|as_crispy_field }}{% endif %} 
+                </div>
             </div>
             {% endif %}
             

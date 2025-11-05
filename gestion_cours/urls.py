@@ -9,10 +9,11 @@ urlpatterns = [
     path('login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     
-    # Password Reset URLs (Ajouté)
+    # 🔧 CORRECTION: Password Reset URLs
     path('password-reset/', 
          auth_views.PasswordResetView.as_view(
-             template_name='registration/password_reset_form.html'
+             template_name='registration/password_reset_form.html',
+             success_url='/password-reset/done/'  # 🔧 AJOUT: URL explicite
          ), 
          name='password_reset'),
     
@@ -24,7 +25,8 @@ urlpatterns = [
     
     path('password-reset-confirm/<uidb64>/<token>/', 
          auth_views.PasswordResetConfirmView.as_view(
-             template_name='registration/password_reset_confirm.html'
+             template_name='registration/password_reset_confirm.html',
+             success_url='/password-reset-complete/'  # 🔧 AJOUT
          ), 
          name='password_reset_confirm'),
     
@@ -45,7 +47,6 @@ urlpatterns = [
     # ------------------ Émargements -------------------
     path('emargement/selection/', views.emargement_selection_view, name='emargement_selection'),
     path('emargement/<int:pk>/', views.emargement_view, name='emargement'),
-    # 🆕 NOUVEAU: Modification et suppression d'émargements
     path('emargement/<int:pk>/update/', views.emargement_update_view, name='emargement_update'),
     path('emargement/<int:pk>/delete/', views.emargement_delete_view, name='emargement_delete'),
     
@@ -55,20 +56,20 @@ urlpatterns = [
     path('professeurs/<int:pk>/update/', views.ProfesseurUpdateView.as_view(), name='professeur_update'),
     path('professeurs/<int:pk>/delete/', views.ProfesseurDeleteView.as_view(), name='professeur_delete'),
     
-    # ------------------ Matières -------------------
-    path('matieres/', views.MatiereListView.as_view(), name='matiere_list'),
+    # 🔧 CORRECTION: Matières - Utiliser les vues FONCTION
+    path('matieres/', views.matiere_list_view, name='matiere_list'),
     path('matieres/create/', views.MatiereCreateView.as_view(), name='matiere_create'),
     path('matieres/<int:pk>/update/', views.MatiereUpdateView.as_view(), name='matiere_update'),
     path('matieres/<int:pk>/delete/', views.MatiereDeleteView.as_view(), name='matiere_delete'),
     
-    # ------------------ Filières -------------------
-    path('filieres/', views.FiliereListView.as_view(), name='filiere_list'),
+    # 🔧 CORRECTION: Filières - Utiliser les vues FONCTION
+    path('filieres/', views.filiere_list_view, name='filiere_list'),
     path('filieres/create/', views.FiliereCreateView.as_view(), name='filiere_create'),
     path('filieres/<int:pk>/update/', views.FiliereUpdateView.as_view(), name='filiere_update'),
     path('filieres/<int:pk>/delete/', views.FiliereDeleteView.as_view(), name='filiere_delete'),
     
-    # ------------------ Niveaux -------------------
-    path('niveaux/', views.NiveauListView.as_view(), name='niveau_list'),
+    # 🔧 CORRECTION: Niveaux - Utiliser les vues FONCTION
+    path('niveaux/', views.niveau_list_view, name='niveau_list'),
     path('niveaux/create/', views.NiveauCreateView.as_view(), name='niveau_create'),
     path('niveaux/<int:pk>/update/', views.NiveauUpdateView.as_view(), name='niveau_update'),
     path('niveaux/<int:pk>/delete/', views.NiveauDeleteView.as_view(), name='niveau_delete'),
@@ -88,14 +89,8 @@ urlpatterns = [
     # ------------------ Évaluations -------------------
     path('evaluations/', views.evaluation_list_view, name='evaluation_list'),
     path('evaluations/<int:pk>/', views.EvaluationManagementView.as_view(), name='evaluation_manage'),
-    # 🆕 NOUVEAU: Modification et suppression d'évaluations
     path('evaluations/<int:pk>/update/', views.evaluation_update_view, name='evaluation_update'),
     path('evaluations/<int:pk>/delete/', views.evaluation_delete_view, name='evaluation_delete'),
-    path('password-reset/', 
-     auth_views.PasswordResetView.as_view(
-         template_name='registration/password_reset_form.html'
-     ), 
-     name='password_reset'),
-
+    
     
 ]

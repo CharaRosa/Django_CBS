@@ -1,8 +1,9 @@
 # gestion_cours/forms.py - VERSION CORRIGÉE
 """
 CORRECTIONS APPORTÉES:
-1. ✅ Champs textarea EvaluationForm rendus saisissables (ajout d'attrs appropriés)
-2. ✅ Widgets avec classes CSS pour compatibilité Crispy Forms/Bootstrap
+1. ✅ Correction de ProfesseurForm pour inclure grade, domaine, cv et dernier_diplome.
+2. ✅ Champs textarea EvaluationForm rendus saisissables (ajout d'attrs appropriés)
+3. ✅ Widgets avec classes CSS pour compatibilité Crispy Forms/Bootstrap
 """
 
 from django import forms
@@ -34,7 +35,7 @@ class BaseCrispyModelForm(forms.ModelForm):
                  pass
         
 # ----------------------------------------------------------------------
-# 1. Formulaires CRUD (Matiere et Professeur) - (LAISSÉS INCHANGÉS)
+# 1. Formulaires CRUD (Matiere et Professeur)
 # ----------------------------------------------------------------------
 class MatiereForm(BaseCrispyModelForm):
     class Meta:
@@ -44,7 +45,8 @@ class MatiereForm(BaseCrispyModelForm):
 class ProfesseurForm(BaseCrispyModelForm):
     class Meta:
         model = Professeur
-        fields = ['nom', 'prenoms', 'contact', 'email'] 
+        # 🟢 CORRECTION : Ajout de tous les champs du modèle Professeur
+        fields = ['nom', 'prenoms', 'contact', 'email', 'grade', 'domaine', 'cv', 'dernier_diplome'] 
         
 # ----------------------------------------------------------------------
 # 2. Formulaire de Programmation - (LAISSÉ INCHANGÉ)

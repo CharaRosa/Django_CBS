@@ -4,7 +4,7 @@
 {% block title %}Historique : {{ matiere_prog.matiere.libelle }}{% endblock %}
 
 {% block content %}
-<!-- En-tête amélioré -->
+<!-- 🔧 CORRECTION: En-tête simplifié et moderne -->
 <div class="page-header-custom">
     <div class="header-content">
         <div class="header-title-section">
@@ -30,140 +30,99 @@
     </div>
     <div class="info-grid">
         <div class="info-item">
-            <div class="info-label">Filière / Niveau</div>
-            <div class="info-value">
-                <span class="badge badge-info">{{ matiere_prog.filiere.code }}</span>
-                <span class="badge badge-secondary">{{ matiere_prog.niveau.libelle }} {{ matiere_prog.niveau.niv }}</span>
-            </div>
+            <span class="info-label">Professeur</span>
+            <span class="info-value">{{ matiere_prog.professeur }}</span>
         </div>
         <div class="info-item">
-            <div class="info-label">Professeur</div>
-            <div class="info-value">{{ matiere_prog.professeur }}</div>
+            <span class="info-label">Filière</span>
+            <span class="info-value badge-filiere">{{ matiere_prog.filiere.code }}</span>
         </div>
         <div class="info-item">
-            <div class="info-label">Volume prévu</div>
-            <div class="info-value"><strong>{{ matiere_prog.nbr_heure }}h</strong></div>
+            <span class="info-label">Niveau</span>
+            <span class="info-value badge-niveau">{{ matiere_prog.niveau.niv }}</span>
         </div>
         <div class="info-item">
-            <div class="info-label">Heures effectuées</div>
-            <div class="info-value text-success">
-                <strong>{{ progression_details.total_heures_faites }}h</strong>
-            </div>
+            <span class="info-label">Semestre</span>
+            <span class="info-value badge-semestre">{{ matiere_prog.get_semestre_display }}</span>
         </div>
         <div class="info-item">
-            <div class="info-label">Progression</div>
-            <div class="info-value">
-                <span class="badge 
-                    {% if progression_details.progression_reelle >= 100 %}badge-success
-                    {% elif progression_details.progression_reelle >= 75 %}badge-warning
-                    {% else %}badge-danger{% endif %}">
-                    {{ progression_details.progression_reelle|floatformat:1 }}%
-                </span>
-            </div>
+            <span class="info-label">Volume Horaire</span>
+            <span class="info-value">{{ matiere_prog.nbr_heure }}h</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Heures Effectuées</span>
+            <span class="info-value text-success"><strong>{{ matiere_prog.total_heures_faites|default:0 }}h</strong></span>
         </div>
     </div>
 </div>
 
-{% include "gestion_cours/includes/messages.html" %}
-
-<!-- Tableau historique simplifié -->
+<!-- 🔧 CORRECTION: Tableau simplifié (seulement Date + Durée + Actions) -->
 <div class="table-card">
     <div class="table-header">
-        <h3>
-            <i class="fas fa-list me-2"></i>
-            Séances Enregistrées 
-            <span class="badge badge-primary">{{ historique_emargement|length }}</span>
+        <h3 class="table-title">
+            <i class="fas fa-list-ul me-2"></i>Séances Enregistrées
         </h3>
     </div>
     <div class="table-wrapper">
-        {% if historique_emargement %}
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th class="text-center">Durée</th>
-                    <th class="col-actions">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for emargement in historique_emargement %}
-                <tr>
-                    <td>
-                        <div class="date-display">
-                            <i class="fas fa-calendar-day me-2"></i>
-                            {{ emargement.date_emar|date:"d/m/Y" }}
-                        </div>
-                    </td>
-                    <td class="text-center">
-                        <span class="badge badge-primary-lg">{{ emargement.heure_eff }}h</span>
-                    </td>
-                    <td>
-                        <div class="action-buttons">
-                            <a href="{% url 'gestion_cours:emargement_update' emargement.pk %}" 
-                               class="btn-action btn-action-edit" 
-                               title="Modifier">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <a href="{% url 'gestion_cours:emargement_delete' emargement.pk %}" 
-                               class="btn-action btn-action-delete" 
-                               title="Supprimer">
-                                <i class="fas fa-trash"></i>
-                            </a>
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        {% if emargements %}
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Date de la Séance</th>
+                        <th class="text-center">Durée</th>
+                        <th class="col-actions">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for emargement in emargements %}
+                    <tr>
+                        <td>
+                            <span class="badge badge-date">
+                                <i class="fas fa-calendar-day me-1"></i>
+                                {{ emargement.date_emar|date:"d/m/Y" }}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge badge-hours">{{ emargement.heure_eff }}h</span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{% url 'gestion_cours:emargement_update' emargement.pk %}" 
+                                   class="btn-action btn-action-edit" 
+                                   title="Modifier">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'gestion_cours:emargement_delete' emargement.pk %}" 
+                                   class="btn-action btn-action-delete" 
+                                   title="Supprimer">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
         {% else %}
         <div class="empty-state">
-            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-            <p class="text-muted">Aucun émargement enregistré pour ce cours.</p>
+            <i class="fas fa-clipboard fa-3x text-muted mb-3"></i>
+            <p class="text-muted">Aucune séance enregistrée pour ce cours.</p>
         </div>
         {% endif %}
     </div>
 </div>
 
-<!-- Section Évaluation -->
-{% if evaluation %}
-<div class="evaluation-card">
-    <div class="evaluation-header">
-        <i class="fas fa-check-circle"></i>
-        <h5>Évaluation Qualitative</h5>
-    </div>
-    <div class="evaluation-content">
-        <div class="evaluation-section">
-            <strong>Résumé :</strong>
-            <p>{{ evaluation.resume_evaluation|truncatewords:50 }}</p>
-        </div>
-        <div class="evaluation-section">
-            <strong>Appréciation AP :</strong>
-            <p>{{ evaluation.appreciation_ap|truncatewords:50 }}</p>
-        </div>
-        <div class="evaluation-section">
-            <strong>Recommandations :</strong>
-            <p>{{ evaluation.recommandations|truncatewords:50 }}</p>
-        </div>
-    </div>
-    <div class="evaluation-actions">
-        <a href="{% url 'gestion_cours:evaluation_update' evaluation.pk %}" class="btn btn-sm btn-warning">
-            <i class="fas fa-edit me-1"></i>Modifier
-        </a>
-        <a href="{% url 'gestion_cours:evaluation_delete' evaluation.pk %}" class="btn btn-sm btn-danger">
-            <i class="fas fa-trash me-1"></i>Supprimer
-        </a>
-    </div>
-</div>
-{% endif %}
-
 <style>
+/* En-tête personnalisé */
 .page-header-custom {
     background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
-    border-radius: 12px;
+    border-radius: 16px;
     padding: 2rem;
     margin-bottom: 2rem;
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
     color: white;
-    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
 }
 
 .header-content {
@@ -174,22 +133,23 @@
     gap: 1rem;
 }
 
-.header-title-section {
-    flex: 1;
-}
-
 .page-title {
-    font-size: 1.5rem;
+    font-size: 1.75rem;
     font-weight: 700;
     margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
 }
 
 .course-title {
-    font-size: 1.1rem;
+    font-size: 1.25rem;
+    font-weight: 600;
     margin: 0;
     opacity: 0.95;
 }
 
+/* Carte d'informations */
 .course-info-card {
     background: white;
     border-radius: 12px;
@@ -199,19 +159,21 @@
 }
 
 .info-header {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 1.25rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    font-weight: 600;
-    font-size: 1.1rem;
     color: #1E293B;
-    margin-bottom: 1.5rem;
+    border-bottom: 2px solid #F59E0B;
+    padding-bottom: 0.75rem;
 }
 
 .info-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.5rem;
+    gap: 1.25rem;
 }
 
 .info-item {
@@ -229,51 +191,103 @@
 .info-value {
     font-size: 1rem;
     color: #1E293B;
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-    flex-wrap: wrap;
+    font-weight: 600;
 }
 
-.badge-info {
+/* Badges */
+.badge {
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    display: inline-block;
+}
+
+.badge-filiere {
+    background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+    color: white;
+}
+
+.badge-niveau {
+    background: linear-gradient(135deg, #6B7280 0%, #4B5563 100%);
+    color: white;
+}
+
+.badge-semestre {
+    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+    color: white;
+}
+
+.badge-date {
     background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
     color: white;
-    padding: 0.4rem 0.8rem;
-    border-radius: 6px;
-    font-weight: 600;
+    padding: 0.5rem 1rem;
 }
 
-.badge-secondary {
-    background: linear-gradient(135deg, #64748B 0%, #475569 100%);
+.badge-hours {
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
     color: white;
-    padding: 0.4rem 0.8rem;
-    border-radius: 6px;
+    padding: 0.5rem 1rem;
+    font-size: 0.95rem;
+}
+
+/* Carte tableau */
+.table-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.table-header {
+    background: linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 100%);
+    padding: 1.25rem 1.5rem;
+    border-bottom: 2px solid #F59E0B;
+}
+
+.table-title {
+    margin: 0;
+    font-size: 1.1rem;
     font-weight: 600;
-}
-
-.badge-primary {
-    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
-    color: white;
-    padding: 0.3rem 0.6rem;
-    border-radius: 6px;
-    font-weight: 600;
-}
-
-.badge-primary-lg {
-    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
-    color: white;
-    padding: 0.6rem 1.2rem;
-    border-radius: 8px;
-    font-weight: 700;
-    font-size: 1rem;
-}
-
-.date-display {
+    color: #1E293B;
     display: flex;
     align-items: center;
-    font-weight: 500;
 }
 
+.table-wrapper {
+    padding: 1.5rem;
+}
+
+/* Tableau */
+.data-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.data-table thead th {
+    background: #F9FAFB;
+    color: #374151;
+    font-weight: 600;
+    text-align: left;
+    padding: 1rem;
+    border-bottom: 2px solid #E5E7EB;
+}
+
+.data-table tbody tr {
+    border-bottom: 1px solid #F3F4F6;
+    transition: all 0.2s ease;
+}
+
+.data-table tbody tr:hover {
+    background-color: #FFFBEB;
+}
+
+.data-table tbody td {
+    padding: 1rem;
+}
+
+/* Boutons d'action */
 .action-buttons {
     display: flex;
     gap: 0.5rem;
@@ -314,57 +328,6 @@
     box-shadow: 0 3px 8px rgba(220, 53, 69, 0.4);
 }
 
-.evaluation-card {
-    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
-    border-radius: 12px;
-    padding: 1.5rem;
-    color: white;
-    margin-top: 2rem;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-}
-
-.evaluation-header {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 1.5rem;
-}
-
-.evaluation-header h5 {
-    margin: 0;
-    font-size: 1.2rem;
-}
-
-.evaluation-content {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    padding: 1rem;
-    margin-bottom: 1rem;
-}
-
-.evaluation-section {
-    margin-bottom: 1rem;
-}
-
-.evaluation-section:last-child {
-    margin-bottom: 0;
-}
-
-.evaluation-section strong {
-    display: block;
-    margin-bottom: 0.3rem;
-}
-
-.evaluation-section p {
-    margin: 0;
-    opacity: 0.95;
-}
-
-.evaluation-actions {
-    display: flex;
-    gap: 0.75rem;
-}
-
 .empty-state {
     padding: 3rem;
     text-align: center;
@@ -372,16 +335,28 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+    .page-header-custom {
+        padding: 1.5rem;
+    }
+
     .header-content {
         flex-direction: column;
         align-items: flex-start;
     }
-    
+
+    .page-title {
+        font-size: 1.5rem;
+    }
+
+    .course-title {
+        font-size: 1.1rem;
+    }
+
     .info-grid {
         grid-template-columns: 1fr;
     }
-    
-    .table-wrapper {
+
+    .table-responsive {
         overflow-x: auto;
     }
 }

@@ -29,211 +29,138 @@
     <div class="alert-icon">
         <i class="fas fa-calendar-alt"></i>
     </div>
-    <span><strong>Année Académique Active :</strong> {{ annee_active }}</span>
+    <span><strong>Année Académique Active :</strong> {{ annee_active.annee_accademique }}</span>
 </div>
 
 {% include "gestion_cours/includes/messages.html" %}
 
-<!-- Filtres responsive -->
+<!-- 🔧 CORRECTION: Filtres en ligne (grid responsive) -->
 <div class="filter-card">
     <div class="filter-header">
         <i class="fas fa-filter"></i>
         Filtrer les Émargements
     </div>
     <form method="get" class="filter-form">
-        <div class="row g-3">
-            <div class="col-lg-2 col-md-4 col-12">
-                <label for="{{ filter.form.date_debut.id_for_label }}" class="form-label">Date début</label>
+        <!-- Row 1: Dates -->
+        <div class="row g-3 mb-3">
+            <div class="col-lg-3 col-md-6 col-12">
+                <label for="{{ filter.form.date_debut.id_for_label }}" class="form-label">Date Début</label>
                 {{ filter.form.date_debut }}
             </div>
-            <div class="col-lg-2 col-md-4 col-12">
-                <label for="{{ filter.form.date_fin.id_for_label }}" class="form-label">Date fin</label>
+            <div class="col-lg-3 col-md-6 col-12">
+                <label for="{{ filter.form.date_fin.id_for_label }}" class="form-label">Date Fin</label>
                 {{ filter.form.date_fin }}
             </div>
-            <div class="col-lg-2 col-md-4 col-12">
+            <div class="col-lg-3 col-md-6 col-12">
                 <label for="{{ filter.form.matiere.id_for_label }}" class="form-label">Matière</label>
                 {{ filter.form.matiere }}
             </div>
-            <div class="col-lg-2 col-md-4 col-12">
+            <div class="col-lg-3 col-md-6 col-12">
                 <label for="{{ filter.form.professeur.id_for_label }}" class="form-label">Professeur</label>
                 {{ filter.form.professeur }}
             </div>
-            <div class="col-lg-2 col-md-4 col-12">
+        </div>
+        
+        <!-- Row 2: Filière, Niveau, Semestre -->
+        <div class="row g-3 mb-3">
+            <div class="col-lg-3 col-md-4 col-12">
                 <label for="{{ filter.form.filiere.id_for_label }}" class="form-label">Filière</label>
                 {{ filter.form.filiere }}
             </div>
-            <div class="col-lg-2 col-md-4 col-12">
+            <div class="col-lg-3 col-md-4 col-12">
                 <label for="{{ filter.form.niveau.id_for_label }}" class="form-label">Niveau</label>
                 {{ filter.form.niveau }}
             </div>
-            <!-- 🆕 NOUVEAU: Filtre Semestre -->
-            <div class="col-lg-2 col-md-4 col-12">
+            <div class="col-lg-3 col-md-4 col-12">
                 <label for="{{ filter.form.semestre.id_for_label }}" class="form-label">Semestre</label>
                 {{ filter.form.semestre }}
             </div>
-        </div>
-        <div class="filter-actions">
-            <button type="submit" class="btn btn-primary">
-                <i class="fas fa-search me-2"></i>Filtrer
-            </button>
-            <a href="{% url 'gestion_cours:historique' %}" class="btn btn-secondary">
-                <i class="fas fa-redo me-2"></i>Réinitialiser
-            </a>
+            <div class="col-lg-3 col-12">
+                <!-- Boutons d'action alignés en bas -->
+                <div class="filter-actions" style="margin-top: auto;">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search me-2"></i>Filtrer
+                    </button>
+                    <a href="{% url 'gestion_cours:historique' %}" class="btn btn-secondary">
+                        <i class="fas fa-redo me-2"></i>Réinitialiser
+                    </a>
+                </div>
+            </div>
         </div>
     </form>
 </div>
 
-<!-- Table des émargements -->
-<div class="table-card mt-4">
+<!-- Tableau -->
+<div class="table-card">
     <div class="table-wrapper">
         {% if page_obj %}
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Matière</th>
-                    <th>Professeur</th>
-                    <th>Filière/Niveau</th>
-                    <th class="text-center">Semestre</th>
-                    <th class="text-center">Durée</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for emargement in page_obj %}
-                <tr>
-                    <td>
-                        <div class="date-cell">
-                            <strong>{{ emargement.date_emar|date:"d/m/Y" }}</strong>
-                            <small class="text-muted d-block">{{ emargement.date_emar|date:"l" }}</small>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="matiere-cell">
-                            <strong>{{ emargement.matiere_programmer.matiere.libelle }}</strong>
-                            <small class="text-muted d-block">{{ emargement.matiere_programmer.matiere.code }}</small>
-                        </div>
-                    </td>
-                    <td>{{ emargement.matiere_programmer.professeur }}</td>
-                    <td>
-                        <span class="badge badge-info">
-                            {{ emargement.matiere_programmer.filiere.code }} - 
-                            {{ emargement.matiere_programmer.niveau.libelle }}
-                        </span>
-                    </td>
-                    <td class="text-center">
-                        <span class="badge badge-primary">
-                            {{ emargement.matiere_programmer.get_semestre_display }}
-                        </span>
-                    </td>
-                    <td class="text-center">
-                        <span class="badge badge-success-lg">
-                            {{ emargement.heure_eff }}h
-                        </span>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Matière</th>
+                        <th>Professeur</th>
+                        <th>Filière</th>
+                        <th>Niveau</th>
+                        <th>Semestre</th>
+                        <th class="text-center">Heures</th>
+                        <th class="col-actions">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for emargement in page_obj %}
+                    <tr>
+                        <td>
+                            <span class="badge badge-date">
+                                <i class="fas fa-calendar-day me-1"></i>
+                                {{ emargement.date_emar|date:"d/m/Y" }}
+                            </span>
+                        </td>
+                        <td><strong>{{ emargement.matiere_programmer.matiere.libelle }}</strong></td>
+                        <td>{{ emargement.matiere_programmer.professeur }}</td>
+                        <td><span class="badge badge-filiere">{{ emargement.matiere_programmer.filiere.code }}</span></td>
+                        <td><span class="badge badge-niveau">{{ emargement.matiere_programmer.niveau.niv }}</span></td>
+                        <td><span class="badge badge-semestre">{{ emargement.matiere_programmer.get_semestre_display }}</span></td>
+                        <td class="text-center">
+                            <span class="badge badge-hours">{{ emargement.heure_eff }}h</span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{% url 'gestion_cours:emargement_update' emargement.pk %}" 
+                                   class="btn-action btn-action-edit" 
+                                   title="Modifier">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'gestion_cours:emargement_delete' emargement.pk %}" 
+                                   class="btn-action btn-action-delete" 
+                                   title="Supprimer">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
         <!-- Pagination -->
         {% if is_paginated %}
-        <div class="pagination-wrapper mt-4">
-            <div class="pagination-info">
-                Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }} 
-                ({{ page_obj.paginator.count }} résultat{{ page_obj.paginator.count|pluralize }})
-            </div>
-            <nav aria-label="Navigation de page">
-                <ul class="pagination justify-content-center">
-                    {% if page_obj.has_previous %}
-                    <li class="page-item">
-                        <a class="page-link" 
-                           href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
-                           aria-label="Première">
-                            <i class="fas fa-angle-double-left"></i>
-                        </a>
-                    </li>
-                    <li class="page-item">
-                        <a class="page-link" 
-                           href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
-                           aria-label="Précédent">
-                            <i class="fas fa-angle-left"></i>
-                        </a>
-                    </li>
-                    {% else %}
-                    <li class="page-item disabled">
-                        <span class="page-link"><i class="fas fa-angle-double-left"></i></span>
-                    </li>
-                    <li class="page-item disabled">
-                        <span class="page-link"><i class="fas fa-angle-left"></i></span>
-                    </li>
-                    {% endif %}
-
-                    {% for num in page_obj.paginator.page_range %}
-                        {% if page_obj.number == num %}
-                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
-                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                        <li class="page-item">
-                            <a class="page-link" 
-                               href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-                               {{ num }}
-                            </a>
-                        </li>
-                        {% endif %}
-                    {% endfor %}
-
-                    {% if page_obj.has_next %}
-                    <li class="page-item">
-                        <a class="page-link" 
-                           href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
-                           aria-label="Suivant">
-                            <i class="fas fa-angle-right"></i>
-                        </a>
-                    </li>
-                    <li class="page-item">
-                        <a class="page-link" 
-                           href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
-                           aria-label="Dernière">
-                            <i class="fas fa-angle-double-right"></i>
-                        </a>
-                    </li>
-                    {% else %}
-                    <li class="page-item disabled">
-                        <span class="page-link"><i class="fas fa-angle-right"></i></span>
-                    </li>
-                    <li class="page-item disabled">
-                        <span class="page-link"><i class="fas fa-angle-double-right"></i></span>
-                    </li>
-                    {% endif %}
-                </ul>
-            </nav>
-        </div>
+        {% include 'gestion_cours/includes/pagination.html' %}
         {% endif %}
-        
+
         {% else %}
-        <div class="alert alert-info">
-            <i class="fas fa-info-circle alert-icon"></i>
-            <span>Aucun émargement trouvé pour les critères sélectionnés.</span>
+        <div class="empty-state">
+            <i class="fas fa-file-signature fa-3x text-muted mb-3"></i>
+            <p class="text-muted">Aucun émargement trouvé.</p>
         </div>
         {% endif %}
     </div>
 </div>
-
-<!-- Statistiques récapitulatives -->
-{% if page_obj %}
-<div class="row mt-4">
-    <div class="col-md-12">
-        <div class="alert alert-light">
-            <h5><i class="fas fa-chart-bar"></i> Résumé :</h5>
-            <ul class="mb-0">
-                <li>Total des émargements : <strong>{{ page_obj.paginator.count }}</strong></li>
-                <li>Les exports Excel et PDF prennent en compte les filtres actifs</li>
-            </ul>
-        </div>
-    </div>
-</div>
-{% endif %}
 
 <style>
+/* Styles pour la page */
 .page-header {
     display: flex;
     justify-content: space-between;
@@ -241,12 +168,6 @@
     margin-bottom: 2rem;
     flex-wrap: wrap;
     gap: 1rem;
-}
-
-.page-actions {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
 }
 
 .export-buttons {
@@ -306,50 +227,96 @@
     color: #1E293B;
 }
 
-.filter-form .row {
-    margin-bottom: 1rem;
+.filter-form .form-label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: #374151;
 }
 
 .filter-actions {
     display: flex;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-    margin-top: 1rem;
+    gap: 0.5rem;
+    align-items: center;
 }
 
-.date-cell strong {
-    display: block;
-    font-size: 1rem;
-}
-
-.matiere-cell strong {
-    display: block;
-    font-size: 0.95rem;
-}
-
-.badge-info {
-    background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
-    color: white;
-    padding: 0.5rem 0.8rem;
-    border-radius: 6px;
-    font-weight: 600;
-}
-
-.badge-primary {
-    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
-    color: white;
+/* Badges */
+.badge {
     padding: 0.4rem 0.8rem;
     border-radius: 6px;
     font-weight: 600;
+    font-size: 0.85rem;
 }
 
-.badge-success-lg {
+.badge-date {
+    background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+    color: white;
+}
+
+.badge-filiere {
+    background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+    color: white;
+}
+
+.badge-niveau {
+    background: linear-gradient(135deg, #6B7280 0%, #4B5563 100%);
+    color: white;
+}
+
+.badge-semestre {
+    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+    color: white;
+}
+
+.badge-hours {
     background: linear-gradient(135deg, #10B981 0%, #059669 100%);
     color: white;
-    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+}
+
+/* Boutons d'action */
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
     border-radius: 8px;
-    font-weight: 700;
-    font-size: 1rem;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    font-size: 0.95rem;
+}
+
+.btn-action-edit {
+    background-color: #ffc107;
+    color: white;
+}
+
+.btn-action-edit:hover {
+    background-color: #e0a800;
+    transform: scale(1.1);
+    box-shadow: 0 3px 8px rgba(255, 193, 7, 0.4);
+}
+
+.btn-action-delete {
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn-action-delete:hover {
+    background-color: #c82333;
+    transform: scale(1.1);
+    box-shadow: 0 3px 8px rgba(220, 53, 69, 0.4);
+}
+
+.empty-state {
+    padding: 3rem;
+    text-align: center;
 }
 
 /* Responsive */
@@ -358,26 +325,27 @@
         flex-direction: column;
         align-items: flex-start;
     }
-    
+
     .export-buttons {
         width: 100%;
     }
-    
+
     .btn-export {
         flex: 1;
         justify-content: center;
     }
-    
-    .table-wrapper {
-        overflow-x: auto;
-    }
-    
+
     .filter-actions {
         flex-direction: column;
+        width: 100%;
     }
-    
+
     .filter-actions .btn {
         width: 100%;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
     }
 }
 </style>
