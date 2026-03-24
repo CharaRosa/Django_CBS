@@ -14,8 +14,6 @@ from .models import (
     Filiere, Niveau, Matiere, AnneeAcademique
 )
 
-
-# ============= FILTRE POUR PROFESSEURS =============
 class ProfesseurFilter(django_filters.FilterSet):
     """Filtres pour la liste des professeurs."""
     
@@ -23,34 +21,45 @@ class ProfesseurFilter(django_filters.FilterSet):
         field_name='nom',
         lookup_expr='icontains',
         label='Nom',
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Rechercher par nom...'})
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Rechercher par nom...'
+        })
     )
     
     prenoms = django_filters.CharFilter(
         field_name='prenoms',
         lookup_expr='icontains',
         label='Prénoms',
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Rechercher par prénoms...'})
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Rechercher par prénoms...'
+        })
     )
     
-    email = django_filters.CharFilter(
-        field_name='email',
+    grade = django_filters.CharFilter(
+        field_name='grade',
         lookup_expr='icontains',
-        label='Email',
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Rechercher par email...'})
+        label='Grade',
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Rechercher par grade...'
+        })
     )
     
-    contact = django_filters.CharFilter(
-        field_name='contact',
+    domaine = django_filters.CharFilter(
+        field_name='domaine',
         lookup_expr='icontains',
-        label='Contact',
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Rechercher par contact...'})
+        label="Domaine d'expertise",
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': "Rechercher par domaine..."
+        })
     )
     
     class Meta:
         model = Professeur
-        fields = ['nom', 'prenoms', 'email', 'contact']
-
+        fields = ['nom', 'prenoms', 'grade', 'domaine']
 
 # ============= FILTRE POUR MATIÈRES =============
 class MatiereFilter(django_filters.FilterSet):

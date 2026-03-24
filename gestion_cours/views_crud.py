@@ -13,6 +13,7 @@ from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
 
 # Import des modèles
 from .models import Professeur, Matiere, Filiere, Niveau, AnneeAcademique
@@ -51,6 +52,7 @@ def apply_filters(request, queryset, filter_class):
 # ============================================================================
 # GESTION DES PROFESSEURS
 # ============================================================================
+@login_required 
 def professeur_list_view(request):
     """Liste des professeurs avec filtres et exports."""
     professeur_list = Professeur.objects.all().order_by('nom')
@@ -120,6 +122,7 @@ class ProfesseurDeleteView(BaseAPView, DeleteView):
 # ============================================================================
 # 🆕 GESTION DES MATIÈRES (AVEC FILTRES ET EXPORTS)
 # ============================================================================
+@login_required 
 def matiere_list_view(request):
     """
     Vue fonction pour la liste des matières avec filtres et exports.
@@ -195,6 +198,7 @@ class MatiereDeleteView(BaseAPView, DeleteView):
 # ============================================================================
 # 🆕 GESTION DES FILIÈRES (AVEC FILTRES ET EXPORTS)
 # ============================================================================
+@login_required 
 def filiere_list_view(request):
     """
     Vue fonction pour la liste des filières avec filtres et exports.
@@ -271,6 +275,7 @@ class FiliereDeleteView(BaseAPView, DeleteView):
 # ============================================================================
 # 🆕 GESTION DES NIVEAUX (AVEC FILTRES ET EXPORTS)
 # ============================================================================
+@login_required 
 def niveau_list_view(request):
     """
     Vue fonction pour la liste des niveaux avec filtres et exports.
